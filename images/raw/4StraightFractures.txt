@@ -1,0 +1,5 @@
+Size: 500 500 1
+res ??? mum
+pore=2
+matrix=1
+solid=0

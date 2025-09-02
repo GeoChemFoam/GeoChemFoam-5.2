@@ -1,0 +1,58 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2212                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _70874860-20230612 OPENFOAM=2212 patch=230612 version=2212
+Arch   : "LSB;label=32;scalar=64"
+Exec   : topoSet -parallel
+Date   : Aug 17 2025
+Time   : 10:24:00
+Host   : julien-HP-EliteBook-855-G7-Notebook-PC
+PID    : 33583
+I/O    : uncollated
+WARNING: running without decomposeParDict "system/decomposeParDict"
+Case   : /home/julien/works/GeoChemFoam-v-dev/tutorials/incompressible/simpleDBSFoam/est_subvol
+nProcs : 8
+Hosts  :
+(
+    (julien-HP-EliteBook-855-G7-Notebook-PC 8)
+)
+Pstream initialized with:
+    floatTransfer      : 0
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create polyMesh for time = 0
+
+Reading topoSetDict
+
+Time = 0
+    mesh not changed.
+Created cellSet refinementRegion
+    Applying source boxToCell
+    Adding cells with centre within boxes 1((0 0 0) (0 0 0))
+    cellSet refinementRegion now size 0
+Read set cellSet refinementRegion size:0
+    Applying source fieldToCell
+    Field min:0.001 max:1
+    Adding all cells with value of field eps within range 0.0011..0.349
+    cellSet refinementRegion now size 181891
+Read set cellSet refinementRegion size:181891
+    Applying source fieldToCell
+    Field min:0.001 max:1
+    Adding all cells with value of field eps within range 0.351..1.001
+    cellSet refinementRegion now size 346996
+
+End
+
+Finalising parallel run
