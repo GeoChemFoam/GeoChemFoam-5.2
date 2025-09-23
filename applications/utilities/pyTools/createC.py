@@ -13,7 +13,8 @@ NPX=int(sys.argv[2])
 NPY=int(sys.argv[3])
 NPZ=int(sys.argv[4])
 
-cinlet=float(sys.argv[5])
+speciesName=sys.argv[5]
+cinlet=float(sys.argv[6])
 
 
 
@@ -49,7 +50,7 @@ data = [
 "    arch        \"LSB;label=32;scalar=64\";\n",
 "    class       volScalarField;\n",
 "    location    \"0\";\n",
-"    object      C;\n",
+"    object      "+speciesName+";\n",
 "}\n",
 "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n",
 "\n",
@@ -152,6 +153,6 @@ data.extend([
 #io_start_time = time.time()
 
 # Write data to file
-with open(output_path+'0/C', 'w') as f:
+with open(output_path+'0/'+speciesName, 'w') as f:
   f.writelines(data)
   f.close()
