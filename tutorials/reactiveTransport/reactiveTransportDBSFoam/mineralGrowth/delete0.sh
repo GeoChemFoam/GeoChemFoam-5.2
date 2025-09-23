@@ -1,0 +1,14 @@
+rm -f 0/A
+rm -f 0/B
+rm -f 0/U
+rm -f 0/p
+rm -f 0/phi
+rm -f 0/R
+rm -f processor*/0/A
+rm -f processor*/0/B
+rm -f processor*/0/U
+rm -f processor*/0/p
+rm -f processor*/0/phi
+rm -f processor*/0/R
+rm -f *0.out
+rm -f *.csv

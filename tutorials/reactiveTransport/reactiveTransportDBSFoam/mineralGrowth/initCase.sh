@@ -6,7 +6,7 @@
 boundary_type="flow_rate"
 
 #Define flow rate
-flowRate=3.5e-10
+flowRate=1e-10
 
 #fluid properties
 Visc=2.61e-6
@@ -15,11 +15,13 @@ Diff=5e-9
 model='grayscale'
 
 #Reaction constants
-kreac=8.9125e-4 
-scoeff=2
+kreac=6.6e-10 
+KSP=3.8019e-09
+scoeff=1
 rhos=2710
 Mws=100
-cinlet=0.0126
+ca=0.001
+cb=0.0005
 
 
 #Kozeny-Carman constant
@@ -50,6 +52,7 @@ cp constant/thermoPhysicalProperties1 constant/thermoPhysicalProperties
 sed -i "s/Diff/$Diff/g" constant/thermoPhysicalProperties
 sed -i "s/s_coeff/$scoeff/g" constant/thermoPhysicalProperties
 sed -i "s/k_reac/$kreac/g" constant/thermoPhysicalProperties
+sed -i "s/K_sp/$KSP/g" constant/thermoPhysicalProperties
 
 NPX="$(tail -n 1 system/NPX)"
 NPY="$(tail -n 1 system/NPY)"
@@ -72,16 +75,19 @@ then
 
         srun python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
         srun python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
+        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
     else
         mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
         mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
+        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
     fi
 else
     python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
     python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
+    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
 fi
 
 echo "Case initialised"
