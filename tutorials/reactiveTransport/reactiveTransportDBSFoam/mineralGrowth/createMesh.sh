@@ -3,8 +3,8 @@
 ###### USERS INPUT ############################################################
 
 #Define image name
-Image_name="calcitePost"
-#Image_name="HM12_2_4"
+#Image_name="calcitePost"
+Image_name="HM12_2_4"
 
 #Image directory location ($PWD if current directory)
 dir="$GCFOAM_IMG/raw"
@@ -16,9 +16,9 @@ format='raw'
 compressed='yes'
 
 # Define image dimensions
-x_dim=536
-y_dim=300
-z_dim=40
+x_dim=2000
+y_dim=2000
+z_dim=10
 
 segmentation='grayscale'
 #Values of solid, pore, and minimum porosity value for the solid phase (note: if the image contains solid voxels, this CANNOT be 0)
@@ -28,40 +28,40 @@ eps_min=0.0001
 
 # Define cropping parameters
 x_min=0
-x_max=536
+x_max=200
 y_min=0
-y_max=300
+y_max=400
 z_min=0
-z_max=40
+z_max=4
 
 #padding for inlet/outlet
 #This adds voxels in the image directly
-padWidth=0
+padWidth=8
 
 # define resolution (m)
-res=0.000005
+res=0.00002
 
 # number of cells of initial mesh
 ## They need to be a factor of the number of voxels in the padded image
-n_x=134
-n_y=75
-n_z=10
+n_x=100
+n_y=200
+n_z=1
 
-dynamicMeshRef='true'
+dynamicMeshRef='false'
 #Mesh refinement level
 nlevel=1
 nRef=200
 refineStokes=0
 
-dimension="3D"
+dimension="2D"
 #dimension="2D"
 # flow direction 0, 1 or 2 
 direction=0
 
 # Number of processors in each direction
 NPX=2
-NPY=2
-NPZ=2
+NPY=4
+NPZ=1
 
 #### END OF USER INPUT #######################################################
 
@@ -154,7 +154,7 @@ then
 elif [ $segmentation == 'phases' ]
 then
      echo "ERROR: only grayscale segmentation implemented for this solver"
-     exit
+     xit
 fi
 
 cyclic='no'
@@ -203,6 +203,7 @@ then
   Mws=100
   cinlet=0
   kf=0 
+  KSP=1e-13
 
   cp constant/transportProperties1 constant/transportProperties
   sed -i "s/Visc/$Visc/g" constant/transportProperties
@@ -214,6 +215,7 @@ then
   sed -i "s/Diff/$Diff/g" constant/thermoPhysicalProperties
   sed -i "s/s_coeff/$scoeff/g" constant/thermoPhysicalProperties
   sed -i "s/k_reac/$kreac/g" constant/thermoPhysicalProperties
+  sed -i "s/K_sp/$KSP/g" constant/thermoPhysicalProperties
 
   cp system/fvSolution1 system/fvSolution
   sed -i "s/nSmooth/1/g" system/fvSolution
@@ -250,7 +252,8 @@ then
           fi
           srun python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
           srun python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $cinlet
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cinlet
 
 	  echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 
@@ -272,7 +275,8 @@ then
       else
           mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
           mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $cinlet
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cinlet
 
           echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 
@@ -295,7 +299,8 @@ then
   else
       python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
       python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-      python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+      python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $cinlet
+      python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cinlet
 
       echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 
