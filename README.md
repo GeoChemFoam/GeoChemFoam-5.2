@@ -1,17 +1,17 @@
 # README #
 
-This is GeoChemFoam, an OpenFOAM-based package developed to perform reactive multiphase transport simulation at the micro-scale
+This is GeoChemFoam, an OpenFOAM-based package developed to perform reactive multiphase transport simulation at the micro-scale.
 
 ######
 
-This is version 5.1
+This is version 5.2.
 
 ######
-Instalation and running instruction can be find at https//github.com/GeoChemFoam
+Installation and running instruction can be find at https//github.com/GeoChemFoam.
 
 ######
 
-For information, contact Dr Julien Maes at j.maes@hw.ac.uk
+For information, contact Dr Julien Maes at j.maes@hw.ac.uk.
 
 Relevant papers:
 
