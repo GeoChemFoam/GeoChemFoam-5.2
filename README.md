@@ -7,17 +7,17 @@ This is GeoChemFoam, an OpenFOAM-based package developed to perform multiphase, 
 This is version 5.2.
 
 ######
-Installation and running instruction can be find at https://github.com/GeoChemFoam.
+Installation and running instructions can be found at https://github.com/GeoChemFoam.
 
 ######
 
-For information, contact Dr Julien Maes at j.maes@hw.ac.uk.
+For information please contact Dr Julien Maes at j.maes@hw.ac.uk.
 
 Relevant papers:
 
 Maes J and Menke, H.P., "Dispersivity calculation in digital twins of multiscale porous materials using the micro-continuum approach", Journal of Environmental Chemical Engineering, 2024. https://www.sciencedirect.com/science/article/pii/S2213343724018591
 
-Maes J and Menke, H. P., "Improved Volume-of-Solid formulations for micro-continuum simulation of mineral dissolution at the pore-scale", Frontier in Earth Science, 2022, https://www.frontiersin.org/articles/10.3389/feart.2022.917931/full
+Maes J, Soulaine, C., and Menke, H. P., "Improved Volume-of-Solid formulations for micro-continuum simulation of mineral dissolution at the pore-scale", Frontier in Earth Science, 2022, https://www.frontiersin.org/articles/10.3389/feart.2022.917931/full
 
 Maes, J. and Menke, H. P., "GeoChemFoam: Direct modelling of flow and heat transfer in micro-CT images of porous media", Heat and Mass transfer, 2022. https://link.springer.com/article/10.1007/s00231-022-03221-2
 
