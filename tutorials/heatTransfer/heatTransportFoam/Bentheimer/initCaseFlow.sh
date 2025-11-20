@@ -2,13 +2,14 @@
 
 ###### USERS INPUT ############################################################
 
-#Define boudnary tupe
+#Define boundary type
 boundary_type="flow_rate"
 #boundary_type="pressure_drop"
-#Define flow rate
+#Enter value (m^3/s) if boundary_type is flow_rate, otherwise put 0
 flowRate=4.2e-9
+#Enter value (Pa) if boundary_type is pressure-drop, otherwise put 0 
 pressureDrop=0 #0.1
-#fluid properties
+#fluid kinematic viscosity (m2/s)
 Visc=8.2e-8
 
 model='grayscale'

@@ -2,14 +2,15 @@
 
 ###### USERS INPUT ############################################################
 
-#Define boudnary tupe
+#Define boundary type
 #boundary_type="flow_rate"
 boundary_type="pressure_drop"
-#Define flow rate
+#Enter value (m^3/s) if boundary_type is flow_rate, otherwise put 0
 flowRate=0 #4.2e-9
-pressureDrop=0.00005 #0.1
-#fluid properties
-Visc=1e-6 #8.2e-8
+#Enter value (Pa) if boundary_type is pressure-drop, otherwise put 0 
+pressureDrop=0.00005 
+#fluid kinematic viscosity (m2/s)
+Visc=1e-6
 
 model='phases'
 

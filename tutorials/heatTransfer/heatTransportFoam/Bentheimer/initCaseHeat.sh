@@ -2,7 +2,7 @@
 
 ###### USERS INPUT ############################################################
 
-#Initial and boundary condition
+#Initial Temperature and boundary condition (dimensionless)
 T0=1.0
 Tin=0.0
 wall_boundary_type="fixedValue" # This value will be T0
@@ -12,12 +12,15 @@ wall_boundary_type="fixedValue" # This value will be T0
 diffModel="harmonic"
 #diffModel="arithmetic"
 #fluid properties
+#Heat conductivity (kW/m/K)
 kappa_f=0.04 
 kappa_s=3.3
 
+#Density (kg/m3)
 rho_f=300
 rho_s=2600
 
+#Heat capacity (kJ/kg/K)
 gamma_f=3000
 gamma_s=700
 

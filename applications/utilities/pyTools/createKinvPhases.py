@@ -385,7 +385,7 @@ data = [
 "\n",
 ]
 if (uniform):
-    data.append("internalField uniform {Kinv[0]};\n")
+    data.append(f"internalField uniform {Kinv[0]};\n")
 else:
     data.extend([
     "internalField   nonuniform List<scalar> \n",

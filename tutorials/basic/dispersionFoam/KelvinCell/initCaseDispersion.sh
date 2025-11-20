@@ -30,7 +30,7 @@ micro_por=(1.0,0.445167,0.0001)
 ##tortuosity iof micropores
 tau=(1,2.636,0)
 
-##micro pore size - Pe = UL/Diff/eps
+##micro pore size (m) - Pe = UL/Diff/eps
 Lpore=(3.69828e-7,3.69828e-07,0)
 
 betax=(0,70,70)
