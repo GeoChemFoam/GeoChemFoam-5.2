@@ -760,7 +760,7 @@ if (uniform):
     mantissa, exponent = sci_str.split('e')
     mantissa = mantissa.rstrip('0').rstrip('.')  # Also remove trailing dot if all decimals are stripped
     Kinv_str = mantissa + 'e' + exponent
-    data.append("internalField uniform {Kinv_str};\n")
+    data.append(f"internalField uniform {Kinv_str};\n")
 else:
     data.extend([
     "internalField   nonuniform List<scalar> \n",

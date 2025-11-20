@@ -2,10 +2,10 @@
 
 ###### USERS INPUT ############################################################
 
-#Define flow rate
+#Define Pressure Gradient (Pa/m)
 PGRAD=0.0050994
 
-#fluid properties
+#fluid kinematic viscosity (m2/s)
 Visc=1e-6
 
 model='phases'
@@ -16,7 +16,7 @@ phases=(1,2,3)
 #define the porosity of each phase, note that the porosity of the solid phase CANNOT be 0, default to 0.0001
 micro_por=(1,0.445167,0.0001)
 
-#define the permeability of each label (note: solid phase should be < 1e-20, pore should be > 1e6)
+#define the permeability (m2) of each label (note: solid phase should be < 1e-20, pore should be > 1e6)
 micro_k=(1e12,7.61085e-15,1e-26)
 
 #Kozeny-Carman constant

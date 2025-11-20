@@ -2,13 +2,14 @@
 
 ###### USERS INPUT ############################################################
 
-#Define boudnary tupe
+#Define boundary type
 #boundary_type="flow_rate"
 boundary_type="pressure_drop"
-#Define flow rate
+#Enter value (m^3/s) if boundary_type is flow_rate, otherwise put 0
 flowRate=0 #4.2e-9
+#Enter value (Pa) if boundary_type is pressure-drop, otherwise put 0 
 pressureDrop=0.1
-#fluid properties
+#fluid kinematic viscosity (m2/s)
 Visc=1e-6
 
 #model='grayscale'
@@ -21,10 +22,10 @@ phases=(1,2,3)
 #define the porosity of each phase, note that the porosity of the solid phase CANNOT be 0, default to 0.0001
 micro_por=(1,0.35,0.0001)
 
-#define the permeability of each label (note: solid phase should be < 1e-20, pore should be > 1e6)
+#define the permeability (m2) of each label (note: solid phase should be < 1e-20, pore should be > 1e6)
 micro_k=(1e+12,1.82e-15,1e-26)
 
-#Kozeny-Carman constant
+#Kozeny-Carman constant (m^(-2))
 #kf=1.8e12
 
 #### END OF USER INPUT #######################################################

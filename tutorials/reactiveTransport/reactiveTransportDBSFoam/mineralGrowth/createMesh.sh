@@ -29,7 +29,7 @@ eps_min=0.0001
 # Define cropping parameters
 x_min=0
 x_max=200
-y_min=0
+y_min=10
 y_max=400
 z_min=0
 z_max=4
@@ -44,7 +44,7 @@ res=0.00002
 # number of cells of initial mesh
 ## They need to be a factor of the number of voxels in the padded image
 n_x=100
-n_y=200
+n_y=195
 n_z=1
 
 dynamicMeshRef='false'

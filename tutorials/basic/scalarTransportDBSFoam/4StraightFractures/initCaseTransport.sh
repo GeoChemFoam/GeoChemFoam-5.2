@@ -2,7 +2,7 @@
 
 ###### USERS INPUT ############################################################
 
-#Initial and boundary condition
+#Initial Tracer and boundary condition (dimensionless)
 T0=0.0
 Tin=1.0
 #wall_boundary_type="fixedValue" # This value will be T0
@@ -37,7 +37,7 @@ micro_por=(0.0001,0.4,1)
 ##tortuosity factor of micropores
 tau=(2.5,2.5,1)
 
-##micro pore size - Pe = UL/Diff/eps
+##micro pore size (m) - Pe = UL/Diff/eps
 #Lpore=(5e-6,5e-6,5e-6)
 
 #betax=(0.5,0.5,0)
