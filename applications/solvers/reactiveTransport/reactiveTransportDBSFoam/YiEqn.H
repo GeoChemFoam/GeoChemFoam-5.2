@@ -21,13 +21,7 @@
         {
             surfaceScalarField phiR = Mw/rhos*fvc::interpolate(Rj)*nEpsf;
 
-            surfaceScalarField phiREps =
-                fvc::flux
-                (
-                    phiR,
-                    eps,
-                    "div(phiR,eps)"
-                );
+            surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
 
             R+=eps*fvc::div(phiR)-fvc::div(phiREps);
         }
@@ -42,9 +36,9 @@
 
 
     forAll(solutionSpecies, i)
-	{
-		volScalarField& Yi = speciesMixture.Y(i);
-		dimensionedScalar DYi = speciesMixture.DY(i);
+    {
+	volScalarField& Yi = speciesMixture.Y(i);
+        dimensionedScalar DYi = speciesMixture.DY(i);
         volScalarField Ri = 0*rhos/Mw*R;
 
         forAll(kineticPhaseReactions,j)
@@ -69,7 +63,7 @@
             {
                 surfaceScalarField phiR = -scoeffj[i]*fvc::interpolate(Rj)*nEpsf;
 
-                surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
+                surfaceScalarField phiREps = scoeffj[i]*fvc::interpolate(Rj)*fvc::flux(-nEpsf,eps,"div(nEpsf,eps)");
                 Ri += fvc::div(phiREps)-eps*fvc::div(phiR);
             }
             else
@@ -82,26 +76,26 @@
 
         volScalarField D = eps*DYi;
                 
-		while (steadyState.correctNonOrthogonal())
-		{
-			fvScalarMatrix YiEqn
-			(
-			    fvm::div(phi, Yi, "div(phi,Yi)")
+        while (steadyState.correctNonOrthogonal())
+        {
+            fvScalarMatrix YiEqn
+            (
+                fvm::div(phi, Yi, "div(phi,Yi)")
                 + fvm::SuSp(-fvc::div(phi),Yi)
-			    - fvm::laplacian(D, Yi)
-			    + Ri
-			);
+                - fvm::laplacian(D, Yi)
+                + Ri
+            );
 
-			YiEqn.relax();
-			YiEqn.solve(mesh.solver("Yi"));
+            YiEqn.relax();
+            YiEqn.solve(mesh.solver("Yi"));
             Yi = max(Yi,0*Yi);
-		}
+        }
 
-		Info<< solutionSpecies[i] << " concentration = "
+	Info<< solutionSpecies[i] << " concentration = "
 			<< "  Min(Yi) = " << gMin(Yi)
 			<< "  Max(Yi) = " << gMax(Yi)
 			<< endl;
-	}
+    }
 }
 
 speciesMixture.correct();
