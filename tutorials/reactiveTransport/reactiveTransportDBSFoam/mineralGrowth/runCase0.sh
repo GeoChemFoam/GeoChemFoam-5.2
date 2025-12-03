@@ -17,11 +17,21 @@ if [ -d "processor0" ]
 then
     export NP="$(find processor* -maxdepth 0 -type d -print| wc -l)"
 
-    echo -e "run reactiveTransportDBSFoam for 1e-06 sec in parallel on $NP processors"
-    mpirun -np $NP reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoam0.out
+    # if PLATFORM is ARCHER2 then use srun, otherwise use serial version
+    if [[ "${PLATFORM}" == "ARCHER2" ]]; then
+        echo -e "run reactiveTransportDBSFoam for 1e-06 sec in parallel on $NP processors"
+        srun reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoam0.out
 
-    echo -e "move 1e-06 to 0"
-    mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/moveResultTo0.py "U" "p" "phi" "A" "B" "R"
+        echo -e "move 1e-06 to 0"
+        srun python $GCFOAM_DIR/applications/utilities/pyTools/moveResultTo0.py "U" "p" "phi" "A" "B" "R"
+
+    else
+        echo -e "run reactiveTransportDBSFoam for 1e-06 sec in parallel on $NP processors"
+        mpirun -np $NP reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoam0.out
+
+        echo -e "move 1e-06 to 0"
+        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/moveResultTo0.py "U" "p" "phi" "A" "B" "R"
+    fi
 
 else
     echo -e "run reactiveTransportDBSFoam for 1e-06"
