@@ -55,7 +55,7 @@ padWidth=0
 res=0.00001
 
 # number of cells of initial mesh
-## They need to be a factor of the number of voxels in the padded image
+## They need to be a factor of the number of voxels in the image
 n_x=50
 n_y=50
 n_z=50
