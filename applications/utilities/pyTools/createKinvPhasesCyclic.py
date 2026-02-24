@@ -756,7 +756,7 @@ data = [
 "\n",
 ]
 if (uniform):
-    sci_str = format(Kinv[j], ".7e")
+    sci_str = format(Kinv[0], ".7e")
     mantissa, exponent = sci_str.split('e')
     mantissa = mantissa.rstrip('0').rstrip('.')  # Also remove trailing dot if all decimals are stripped
     Kinv_str = mantissa + 'e' + exponent
