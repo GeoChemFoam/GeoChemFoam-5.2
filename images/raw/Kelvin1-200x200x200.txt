@@ -1,4 +1,5 @@
 Size: 200 200 200
 res 10 mum
+segmentation=phases
 pore=1
 solid=2

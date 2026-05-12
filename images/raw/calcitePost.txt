@@ -1,4 +1,5 @@
 Size: 536 300 40
 res 5 mum
+segmentation=grayscale
 pore=255
 solid=0

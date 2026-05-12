@@ -25,7 +25,12 @@ then
     export NP="$(find processor* -maxdepth 0 -type d -print| wc -l)"
 
     echo -e "run reactiveTransportDBSFoam in parallel on $NP processors"
-    mpiexec -np $NP reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoamRT.out
+    if [[ "${PLATFORM}" == "ARCHER2" ]]; then
+        srun reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoamRT.out
+    else
+        mpirun -np $NP reactiveTransportDBSFoam -parallel > reactiveTransportDBSFoamRT.out
+    fi
+
 else
     echo -e "run reactiveTransportDBSFoam"
     reactiveTransportDBSFoam > reactiveTransportDBSFoamRT.out 

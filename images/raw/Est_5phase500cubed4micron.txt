@@ -1,5 +1,6 @@
 Size: 500 500 500
 res 4 mum
+segmentation=phases
 pore=1
 solid=5
 micropores=2-4

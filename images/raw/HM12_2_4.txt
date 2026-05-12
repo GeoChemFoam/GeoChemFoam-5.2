@@ -1,4 +1,5 @@
 Size: 2000 2000 10
 res 30 mum
+segmentation=grayscale
 pore=255
 solid=0

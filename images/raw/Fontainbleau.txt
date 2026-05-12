@@ -1,4 +1,5 @@
 Size: 480 480 480
 res 5.7 mum
+segmentation=grayscale
 pore=0
 solid=255

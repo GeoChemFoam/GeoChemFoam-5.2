@@ -1,5 +1,6 @@
 Size: 500 500 1
 res ??? mum
+segmentation=phases
 pore=2
 matrix=1
 solid=0
