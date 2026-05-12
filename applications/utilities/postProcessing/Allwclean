@@ -16,3 +16,4 @@ wclean processRelPermPF
 wclean processSpeciesTransfer
 wclean processFF
 wclean processDispersion
+wclean processStressStrain

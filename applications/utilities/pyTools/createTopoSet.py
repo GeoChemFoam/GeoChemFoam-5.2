@@ -8,6 +8,7 @@ segmentation = sys.argv[1]
 eps_min=float(sys.argv[2])
 micro_por=sys.argv[3]
 refineStokes=int(sys.argv[4])
+refineSolid=int(sys.argv[5])
 
 f=open("system/topoSetDict",'w')
 f.seek(0) #get to the first position
@@ -38,7 +39,17 @@ if (segmentation=='phases'):
   f.write("max "+str(poro[nlist-1]+3e-3)+";"+'\n')
   f.write("}"'\n')
 
-  for j in range (0,nlist-1):
+  f.write("{"+'\n')
+  f.write("name refinementRegion;"+'\n')
+  f.write("type cellSet;"+'\n')
+  f.write("action add;"+'\n')
+  f.write("source fieldToCell;"+'\n')
+  f.write("field eps;"+'\n')
+  f.write("min "+str(poro[0]+(poro[1]-poro[0])*5e-3*(1-2*refineSolid))+";"+'\n')
+  f.write("max "+str(poro[1]-(poro[1]-poro[0])*5e-3)+";"+'\n')
+  f.write("}"+'\n')
+
+  for j in range (1,nlist-1):
     f.write("{"+'\n')
     f.write("name refinementRegion;"+'\n')
     f.write("type cellSet;"+'\n')
@@ -58,7 +69,7 @@ else:
   f.write("action new;"+'\n')
   f.write("source fieldToCell;"+'\n')
   f.write("field eps;"+'\n')
-  f.write("min "+str(eps_min+(1-eps_min)*5e-3)+";"+'\n')
+  f.write("min "+str(eps_min+(1-eps_min)*5e-3*(1-2*refineSolid))+";"+'\n')
   f.write("max "+str(1.0-(1-eps_min)*5e-3 +refineStokes*1e-2)+";"+'\n')
   f.write("}"+'\n')
   f.write(");")

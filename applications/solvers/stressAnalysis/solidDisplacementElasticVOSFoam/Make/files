@@ -1,0 +1,3 @@
+solidDisplacementElasticVOSFoam.C
+
+EXE = $(GCFOAM_APPBIN)/solidDisplacementElasticVOSFoam

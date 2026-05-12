@@ -1,0 +1,24 @@
+FoamFile
+{
+version     4.0;
+format      ascii;
+class       dictionary;
+location    "system";
+object      postProcessDict;
+}
+
+x1 0;
+x2 .00100;
+
+y1 0;
+y2 .00150;
+
+z1 0;
+z2 .00100;
+
+leftName wall_left;
+rightName wall_right;
+topName wall_top;
+bottomName wall_bottom;
+frontName wall_front;
+backName wall_back;

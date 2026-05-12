@@ -23,7 +23,7 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, padWi
      zmin=0
      zmax=zMax-zMin
      
- else:
+ elif direction==2:
      #bounding box
      xmin=0
      xmax=xMax-xMin
@@ -31,6 +31,15 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, padWi
      ymax=yMax-yMin
      zmin=-padWidth
      zmax=zMax-zMin+padWidth
+ else:
+     #bounding box
+     xmin=-padWidth
+     xmax=xMax-xMin+padWidth
+     ymin=-padWidth
+     ymax=yMax-yMin+padWidth
+     zmin=-padWidth
+     zmax=zMax-zMin+padWidth
+
  
  #number of cells
  p=int((xMax-xMin)/nX)

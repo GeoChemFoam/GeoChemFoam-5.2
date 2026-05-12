@@ -3,7 +3,7 @@ import array
 import os
 import time
 
-def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image_name, padWidth, pores_value,solid_value, micro_por, phases ,dimension,direction, NPX, NPY, NPZ, rank, output_path):
+def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image_name, padWidth, pad_value, pores_value,solid_value, micro_por, phases ,dimension,direction, NPX, NPY, NPZ, rank, output_path):
 
  #start_time = time.time()
  
@@ -35,8 +35,7 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image
     zmin=0
     zmax=zMax-zMin
     pad_in_z=0
- else:
-    direction=2
+ elif direction==2:
     #bounding box
     xmin=0
     xmax=xMax-xMin
@@ -44,8 +43,17 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image
     ymax=yMax-yMin
     zmin=-padWidth
     zmax=zMax-zMin+padWidth
-    direction=2
     pad_in_z=padWidth
+ else:
+    #bounding box
+    xmin=-padWidth
+    xmax=xMax-xMin+padWidth
+    ymin=-padWidth
+    ymax=yMax-yMin+padWidth
+    zmin=-padWidth
+    zmax=zMax-zMin+padWidth
+    pad_in_z=padWidth
+
  
  #number of cells
  p=int((xMax-xMin)/nX)
@@ -98,8 +106,9 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image
  ncells=nxp*nyp*nzp
  
  # if padding in z prepare a slice of pore_values
- if direction ==2:
-    my_local_pad_array = np.full((yDim*xDim), pores_value, dtype=np.uint8)
+ if (pad_in_z > 0):
+    my_local_pad_array = np.full((yDim*xDim), pad_value, dtype=np.uint8)
+
  
  io_start_time = time.time()
  
@@ -147,10 +156,15 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image
 
      if direction==0:
        #add pad in direction 0
-       my_array = np.pad(my_array,pad_width=((0,0),(padWidth,padWidth)),mode='constant',constant_values=pores_value)
+       my_array = np.pad(my_array,pad_width=((0,0),(padWidth,padWidth)),mode='constant',constant_values=pad_value)
      elif direction==1:
        #add pad in direction 1 
-       my_array = np.pad(my_array,pad_width=((padWidth,padWidth),(0,0)),mode='constant',constant_values=pores_value)
+       my_array = np.pad(my_array,pad_width=((padWidth,padWidth),(0,0)),mode='constant',constant_values=pad_value)
+     elif direction==-1:
+       #add pad in direction 0 
+       my_array = np.pad(my_array,pad_width=((0,0),(padWidth,padWidth)),mode='constant',constant_values=pad_value)
+       #add pad in direction 1 
+       my_array = np.pad(my_array,pad_width=((padWidth,padWidth),(0,0)),mode='constant',constant_values=pad_value)
 
 
    # np.concatenate cannot add layer onto pile if pile is empty, thus the first layer is a simply copy.
@@ -336,14 +350,21 @@ def main(xDim, yDim, zDim, xMin, xMax, yMin, yMax, zMin, zMax, nX, nY, nZ, Image
  "\n",
  "boundaryField\n",
  "{\n"
- "    inlet\n"
- "    {\n",
- "        type            zeroGradient;\n",
- "    }\n"
- "    outlet\n"
- "    {\n",
- "        type            zeroGradient;\n",
- "    }\n"
+])
+
+ if (direction>-1):
+   data.extend([
+   "    inlet\n"
+   "    {\n",
+   "        type            zeroGradient;\n",
+   "    }\n"
+   "    outlet\n"
+   "    {\n",
+   "        type            zeroGradient;\n",
+   "    }\n"
+ ])
+
+ data.extend([
  "    \"wall_.*\"""\n"
  "    {\n",
  "        type            zeroGradient;\n",

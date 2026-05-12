@@ -7,5 +7,7 @@ thermophysicalModels/Allwmake
 wmake libso fvMotionSolver
 wmake libso finiteVolume
 wmake libso meshTools
+wmake libso OpenFOAM
 transportModels/Allwmake
+solidModels/Allwmake
 # ----------------------------------------------------------------- end-of-file

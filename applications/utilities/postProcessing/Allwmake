@@ -18,5 +18,5 @@ wmake processRelPermPF
 wmake processSpeciesTransfer
 wmake processFF
 wmake processDispersion
-
+wmake processStressStrain
 # ----------------------------------------------------------------- end-of-file

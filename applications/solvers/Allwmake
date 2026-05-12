@@ -9,4 +9,5 @@ multiphaseTransport/Allwmake
 multiphaseReactiveTransport/Allwmake
 incompressible/Allwmake
 heatTransfer/Allwmake
+stressAnalysis/Allwmake
 # ----------------------------------------------------------------- end-of-file

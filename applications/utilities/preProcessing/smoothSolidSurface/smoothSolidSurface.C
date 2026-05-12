@@ -53,18 +53,6 @@ int main(int argc, char *argv[])
 		
                 simpleControl simple(mesh);
 
-                IOdictionary transportProperties
-                (
-                    IOobject
-                    (
-                        "transportProperties",
-                        runTime.constant(),
-                        mesh,
-                        IOobject::MUST_READ,
-                        IOobject::NO_WRITE
-                    )
-                );
-
 		volScalarField eps 
 		(
 			IOobject

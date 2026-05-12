@@ -1,0 +1,11 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      subsetMeshDict;
+}
+
+set   epsCells;     // the cellSet you made with topoSet
+name  newRegion;    // name for the subset (ignored if -overwrite used)
+
