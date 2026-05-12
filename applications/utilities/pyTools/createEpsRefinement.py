@@ -25,20 +25,21 @@ n_z = int(sys.argv[12])
 res = float(sys.argv[13])
 Image_name = sys.argv[14]
 padWidth = int(sys.argv[15])
-pores_value = float(sys.argv[16])
-solid_value = float(sys.argv[17])
-eps_min = float(sys.argv[18])
-dimension = sys.argv[19]
-direction = int(sys.argv[20])
-cyclic = sys.argv[21]
-segmentation = sys.argv[22]
-micro_por=sys.argv[23]
-phases=sys.argv[24]
-nlevel=int(sys.argv[25])
-refineStokes=float(sys.argv[26])
-NPX = int(sys.argv[27])
-NPY = int(sys.argv[28])
-NPZ = int(sys.argv[29])
+pad_value = float(sys.argv[16])
+pores_value = float(sys.argv[17])
+solid_value = float(sys.argv[18])
+eps_min = float(sys.argv[19])
+dimension = sys.argv[20]
+direction = int(sys.argv[21])
+cyclic = sys.argv[22]
+segmentation = sys.argv[23]
+micro_por=sys.argv[24]
+phases=sys.argv[25]
+nlevel=int(sys.argv[26])
+refineStokes=float(sys.argv[27])
+NPX = int(sys.argv[28])
+NPY = int(sys.argv[29])
+NPZ = int(sys.argv[30])
 
 #start_time = time.time()
 NP=NPX*NPY*NPZ
@@ -54,14 +55,14 @@ else:
 
 if (segmentation=='grayscale'):
   if (cyclic=='yes'):
-    createEpsRefinementGrayscaleCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pores_value, solid_value, eps_min, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
+    createEpsRefinementGrayscaleCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pad_value,pores_value, solid_value, eps_min, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
   else:
-    createEpsRefinementGrayscale.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pores_value, solid_value, eps_min, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
+    createEpsRefinementGrayscale.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pad_value,pores_value, solid_value, eps_min, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
 elif (segmentation=='phases'):
   if (cyclic=='yes'):
-    createEpsRefinementPhasesCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pores_value, solid_value, micro_por, phases, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
+    createEpsRefinementPhasesCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pad_value,pores_value, solid_value, micro_por, phases, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
   else:
-    createEpsRefinementPhases.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pores_value, solid_value, micro_por, phases, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
+    createEpsRefinementPhases.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, res,Image_name, padWidth, pad_value,pores_value, solid_value, micro_por, phases, dimension,direction, nlevel,refineStokes,NPX, NPY, NPZ, rank, output_path)
 else:
   raise TypeError("only grayscale and phases segmentation accepted")
 

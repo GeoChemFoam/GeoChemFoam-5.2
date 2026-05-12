@@ -9,3 +9,4 @@ multiphaseTransport/Allwclean
 multiphaseReactiveTransport/Allwclean
 incompressible/Allwclean
 heatTransfer/Allwclean
+stressAnalysis/Allwclean

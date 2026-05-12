@@ -1,0 +1,3 @@
+derivedFvPatchFields/tractionDisplacement/tractionDisplacementFvPatchVectorField.C
+
+LIB = $(GCFOAM_LIBBIN)/libtraction

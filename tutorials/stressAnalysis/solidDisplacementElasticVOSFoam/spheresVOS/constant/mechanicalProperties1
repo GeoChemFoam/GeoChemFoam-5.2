@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      mechanicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+rho
+{
+    type        uniform;
+    value       rho_s;//7854;
+}
+
+nu
+{
+    type        uniform;
+    value       Poisson;//0.3;
+}
+
+E
+{
+    type        uniform;
+    value       Young_Modulus;//2e11;
+}
+
+planeStress     yes;
+
+fluidPressure [1 -1 -2 0 0 0 0] fluid_pressure;
+
+// ************************************************************************* //

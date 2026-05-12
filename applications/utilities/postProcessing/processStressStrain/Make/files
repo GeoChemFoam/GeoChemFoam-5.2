@@ -1,0 +1,3 @@
+processStressStrain.C
+
+EXE = $(GCFOAM_APPBIN)/processStressStrain

@@ -154,11 +154,11 @@ then
 elif [ $segmentation == 'phases' ]
 then
      echo "ERROR: only grayscale segmentation implemented for this solver"
-     xit
+     exit
 fi
 
 cyclic='no'
-
+pad_value=$pores_value
 if [[ $NP > 1 ]]; then
     # if PLATFORM is ARCHER2 then use srun, otherwise use serial version
     if [[ "${PLATFORM}" == "ARCHER2" ]]; then
@@ -171,14 +171,22 @@ if [[ $NP > 1 ]]; then
         fi
 
         # prepend spindle to srun command to pre-load python modules, otherwise comment-out sprindle line to simply use srun
-        srun python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim  $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ
+       srun python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $padWidth $dimension $direction $cyclic $NPX $NPY $NPZ
+
+       srun python $GCFOAM_DIR/applications/utilities/pyTools/createImage.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ 'eps'
+
 
     else
-       mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim  $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ
+       mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $padWidth $dimension $direction $cyclic $NPX $NPY $NPZ
+
+       mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createImage.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ 'eps'
 
     fi
 else
-    python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim  $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ
+       python $GCFOAM_DIR/applications/utilities/pyTools/createMesh.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $padWidth $dimension $direction $cyclic $NPX $NPY $NPZ
+
+       python $GCFOAM_DIR/applications/utilities/pyTools/createImage.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $NPX $NPY $NPZ 'eps'
+
 
 fi
 
@@ -269,7 +277,7 @@ then
           srun processMeshCellCenters -parallel > processMeshCellCenters.out
 
           echo "create refined eps"
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createEpsDynamic.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $nlevel $NPX $NPY $NPZ
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createImageRefinement.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $nlevel $refineStokes $NPX $NPY $NPZ 'eps'
 
 
       else
@@ -292,7 +300,7 @@ then
           mpirun -np $NP processMeshCellCenters -parallel > processMeshCellCenters.out
 
           echo "create refined eps"
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createEpsRefinement.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $nlevel $refineStokes $NPX $NPY $NPZ
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createImageRefinement.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $nlevel $refineStokes $NPX $NPY $NPZ 'eps'
 
 
       fi
@@ -316,7 +324,9 @@ then
       echo "process mesh centers"
       processMeshCellCenters > processMeshCellCenters.out
 
-      python $GCFOAM_DIR/applications/utilities/pyTools/createEpsDynamic.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pores_value $solid_value $eps_min $dimension $direction $nlevel $NPX $NPY $NPZ
+      echo "create refined eps"
+      python $GCFOAM_DIR/applications/utilities/pyTools/createImageRefinement.py $x_dim $y_dim $z_dim $x_min $x_max $y_min $y_max $z_min $z_max $n_x $n_y $n_z $res $Image_name $padWidth $pad_value $pores_value $solid_value $eps_min $dimension $direction $cyclic $segmentation $micro_por $phases $i $refineStokes $NPX $NPY $NPZ 'eps'
+
   fi
 
   cp constant/dynamicMeshDict2 constant/dynamicMeshDict

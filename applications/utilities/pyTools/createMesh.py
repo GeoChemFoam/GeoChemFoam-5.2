@@ -8,10 +8,6 @@ import createfacemesh as createfacemesh
 import createfacemeshCyclic as createfacemeshCyclic
 import createboundarymesh as createboundarymesh
 import createboundarymeshCyclic as createboundarymeshCyclic
-import createEpsGrayscale as createEpsGrayscale
-import createEpsGrayscaleCyclic as createEpsGrayscaleCyclic
-import createEpsPhases as createEpsPhases
-import createEpsPhasesCyclic as createEpsPhasesCyclic
 import time
 
 comm = MPI.COMM_WORLD
@@ -31,20 +27,13 @@ n_x = int(sys.argv[10])
 n_y = int(sys.argv[11])
 n_z = int(sys.argv[12])
 res = float(sys.argv[13])
-Image_name = sys.argv[14]
-padWidth = int(sys.argv[15])
-pores_value = float(sys.argv[16])
-solid_value = float(sys.argv[17])
-eps_min = float(sys.argv[18])
-dimension = sys.argv[19]
-direction = int(sys.argv[20])
-cyclic = sys.argv[21]
-segmentation = sys.argv[22]
-micro_por=sys.argv[23]
-phases=sys.argv[24]
-NPX = int(sys.argv[25])
-NPY = int(sys.argv[26])
-NPZ = int(sys.argv[27])
+padWidth = int(sys.argv[14])
+dimension = sys.argv[15]
+direction = int(sys.argv[16])
+cyclic = sys.argv[17]
+NPX = int(sys.argv[18])
+NPY = int(sys.argv[19])
+NPZ = int(sys.argv[20])
 
 #start_time = time.time()
 NP=NPX*NPY*NPZ
@@ -91,22 +80,6 @@ if (cyclic=='yes'):
 else:
     createboundarymesh.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, padWidth, dimension, direction, NPX, NPY, NPZ, rank, output_path)
 
-
-if rank == 0:
-    print(f"create eps")
-
-if (segmentation=='grayscale'):
-  if (cyclic=='yes'):
-    createEpsGrayscaleCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, Image_name, padWidth, pores_value, solid_value, eps_min, dimension,direction, NPX, NPY, NPZ, rank, output_path)
-  else:
-    createEpsGrayscale.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, Image_name, padWidth, pores_value, solid_value, eps_min, dimension,direction, NPX, NPY, NPZ, rank, output_path)
-elif (segmentation=='phases'):
-  if (cyclic=='yes'):
-    createEpsPhasesCyclic.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, Image_name, padWidth, pores_value, solid_value, micro_por, phases, dimension,direction, NPX, NPY, NPZ, rank, output_path)
-  else:
-    createEpsPhases.main(x_dim, y_dim, z_dim, x_min, x_max, y_min, y_max, z_min, z_max, n_x, n_y, n_z, Image_name, padWidth, pores_value, solid_value, micro_por, phases, dimension,direction, NPX, NPY, NPZ, rank, output_path)
-else:
-  raise TypeError("only grayscale and phases segmentation accepted")
 
 
 #end_time = time.time()

@@ -1,0 +1,5 @@
+
+matrices/lduMatrix/solvers/GAMG/GAMGAgglomerations/extendedAlgebraicPairGAMGAgglomeration/extendedAlgebraicPairGAMGAgglomeration.C
+matrices/lduMatrix/solvers/GAMG/GAMGAgglomerations/extendedAlgebraicPairGAMGAgglomeration/extendedAlgebraicPairGAMGAgglomerate.C
+
+LIB = $(GCFOAM_LIBBIN)/libOpenGCFOAM
