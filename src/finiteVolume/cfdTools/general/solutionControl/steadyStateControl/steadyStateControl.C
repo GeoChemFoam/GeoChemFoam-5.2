@@ -34,6 +34,7 @@ bool Foam::steadyStateControl::read()
     solutionControl::read(true);
     const dictionary& steadyStateDict =dict();
     nCorr_ = steadyStateDict.lookupOrDefault<label>("nCorrectors",1000);
+    steadyStateConcentration=steadyStateDict.lookupOrDefault<bool>("steadyStateConcentration",false);
     return true;
 }
 
@@ -103,7 +104,8 @@ Foam::steadyStateControl::steadyStateControl
 :
     solutionControl(mesh, dictName),
     initialised_(false),
-    iter_counter(0)
+    iter_counter(0),
+    steadyStateConcentration(false)
 {
     read();
 
@@ -113,12 +115,7 @@ Foam::steadyStateControl::steadyStateControl
 
         if (residualControl_.empty())
         {
-            const scalar duration =
-                mesh_.time().endTime().value()
-              - mesh_.time().startTime().value();
-
             Info<< ": no convergence criteria found. "
-                << "Calculations will run for " << duration << " steps."
                 << nl;
         }
         else

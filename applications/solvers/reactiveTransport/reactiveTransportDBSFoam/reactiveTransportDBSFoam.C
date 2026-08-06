@@ -128,9 +128,15 @@ int main(int argc, char *argv[])
             turbulence->correct();
 
             // Concentration solver
+            if (steadyState.isSteadyStateConcentration())
             {
                 #include "YiEqn.H"
             }
+        }
+
+        if (!steadyState.isSteadyStateConcentration())
+        {
+            #include "YiEqn.H"
         }
 
         runTime.write();

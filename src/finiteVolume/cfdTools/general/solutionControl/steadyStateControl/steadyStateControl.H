@@ -52,9 +52,11 @@ protected:
         //- Initialised flag
         bool initialised_;
 
-		label iter_counter;
+	label iter_counter;
 
        label nCorr_;
+
+       bool steadyStateConcentration;
 
 
     // Protected Member Functions
@@ -98,6 +100,11 @@ public:
     //- Return true if all convergence checks are satisfied
     bool criteriaSatisfied();
 
+
+    const bool& isSteadyStateConcentration() const
+    {
+        return steadyStateConcentration;
+    }
 
     // Member Functions
 

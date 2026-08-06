@@ -17,7 +17,9 @@ FoamFile
 
 ddtSchemes
 {
-    default         CrankNicolson 0.5;
+    ddt(eps)         CrankNicolson 0.5;
+    ddt(eps,A)       steadyState;
+    ddt(eps,B)       steadyState;
 }
 
 gradSchemes

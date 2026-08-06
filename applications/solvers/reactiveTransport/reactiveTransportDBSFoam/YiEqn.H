@@ -80,7 +80,8 @@
         {
             fvScalarMatrix YiEqn
             (
-                fvm::div(phi, Yi, "div(phi,Yi)")
+	        fvm::ddt(eps,Yi)
+                + fvm::div(phi, Yi, "div(phi,Yi)")
                 + fvm::SuSp(-fvc::div(phi),Yi)
                 - fvm::laplacian(D, Yi)
                 + Ri

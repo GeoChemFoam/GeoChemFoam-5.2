@@ -70,7 +70,7 @@ solvers
 
 SIMPLE
 {
-    nNonOrthogonalCorrectors 1;
+    nNonOrthogonalCorrectors 0;
 
     nS nSmooth;
     cS cSmooth;
@@ -88,6 +88,7 @@ STEADYSTATE
     momentumPredictor no;
     nNonOrthogonalCorrectors 0;
     nCorrectors NCORR;
+    steadyStateConcentration true;
 
 	residualControl
 	{
