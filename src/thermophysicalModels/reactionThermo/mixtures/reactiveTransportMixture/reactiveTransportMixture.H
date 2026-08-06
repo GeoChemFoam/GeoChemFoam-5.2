@@ -15,23 +15,21 @@ License
     website for more information <https://github.com/GeoChemFoam>.
 
 Class
-    Foam::multiComponentTransportMixture
+    Foam::reactiveTransportMixture
 
 Description
-    Foam::multiComponentTransportMixture
+    Reactive transport mixture wrapper around a multiComponentTransportMixture.
 
 SourceFiles
-    multiComponentTransportMixture.C
+    reactiveTransportMixture.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef multiComponentTransportMixture_H
-#define multiComponentTransportMixture_H
+#ifndef reactiveTransportMixture_H
+#define reactiveTransportMixture_H
 
-#include "basicMultiComponentTransportMixture.H"
-#include "basicMultiComponentMixture.H"
-#include "solutionSurfaceMultiComponentMixture.H"
-#include "phreeqcMixture.H"
+#include "basicReactiveTransportMixture.H"
+#include <vector>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -39,34 +37,51 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class multiComponentTransportMixture Declaration
+                 Class reactiveTransportMixture Declaration
 \*---------------------------------------------------------------------------*/
 
-template <class MixtureType>
-class multiComponentTransportMixture
+template<class MixtureType>
+class reactiveTransportMixture
 :
-    public basicMultiComponentTransportMixture,
+    public basicReactiveTransportMixture,
     public MixtureType
 {
-    // Private member functions
+
+protected:
+
+        //- Index mapping to index of 1st SI component
+        std::vector<int> component1Index_;
+
+        //- Index mapping to index of 2nd SI component
+        std::vector<int> component2Index_;
+
+
+private:
 
         //- Construct as copy (not implemented)
-        multiComponentTransportMixture(const multiComponentTransportMixture&);
+        reactiveTransportMixture(const reactiveTransportMixture&);
 
 
 public:
 
+    //- Runtime type information
+    TypeName("reactiveTransportMixture");
+
 
     // Constructors
 
-
         //- Construct from mesh
-        multiComponentTransportMixture
-        (
-            const fvMesh&
-        );
+        reactiveTransportMixture(const fvMesh&);
+
+
+    //- Destructor
+    virtual ~reactiveTransportMixture();
+
 
     // Member functions
+
+        //- Correct mixture and kinetic reaction state
+        void correct();
 
         //- Return the table of species
         const speciesTable& species() const
@@ -98,10 +113,9 @@ public:
             return MixtureType::Y(i);
         }
 
-        //- Update properties
-        void correct()
+        void setSaturation(const volScalarField& alpha)
         {
-            MixtureType::correct();
+            // Nothing to do for the kinetic wrapper.
         }
 };
 
@@ -109,12 +123,6 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-//#ifdef NoRepository
-//#   include "multiComponentTransportMixture.C"
-//#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

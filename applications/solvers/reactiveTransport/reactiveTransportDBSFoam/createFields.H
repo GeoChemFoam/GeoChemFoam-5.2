@@ -85,7 +85,13 @@ IOdictionary transportProperties
 #include "createPhi.H"
 
 Info << "Create species mixture\n" << endl;
-multiComponentTransportMixture<reactiveMixture> speciesMixture(mesh);
+autoPtr<basicReactiveTransportMixture> pSpeciesMixture
+(
+    basicReactiveTransportMixture::New(mesh)
+);
+
+basicReactiveTransportMixture& speciesMixture = pSpeciesMixture();
+speciesMixture.correct();
 
 label pRefCell = 0;
 scalar pRefValue = 0.0;

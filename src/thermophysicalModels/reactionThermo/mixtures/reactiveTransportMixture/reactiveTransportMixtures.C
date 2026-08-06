@@ -16,30 +16,20 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "multiComponentTransportMixture.H"
+#include "makeReactiveTransportMixture.H"
 
-// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+#include "reactiveTransportMixture.H"
+#include "inertMultiComponentMixture.H"
+#include "phreeqcMixture.H"
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-
-
-template<class MixtureType>
-Foam::multiComponentTransportMixture<MixtureType>::multiComponentTransportMixture
-(
-    const fvMesh& mesh
-)
-:
-    basicMultiComponentTransportMixture(mesh),
-    MixtureType(*this, this->subDict("solutionSpecies").toc(), mesh)
-{}
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-// ************************************************************************* //
 namespace Foam
 {
-    template class Foam::multiComponentTransportMixture<Foam::basicMultiComponentMixture>;
-    template class Foam::multiComponentTransportMixture<Foam::solutionSurfaceMultiComponentMixture>;
-    template class Foam::multiComponentTransportMixture<Foam::phreeqcMixture>;
-}
+
+makeReactiveTransportMixture(inertMultiComponentMixture);
+makeReactiveTransportMixture(phreeqcMixture);
+
+} // End namespace Foam
+
+// ************************************************************************* //

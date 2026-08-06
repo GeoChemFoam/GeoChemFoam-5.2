@@ -13,8 +13,8 @@ if (adjustTimeStep)
     );
 
     scalar newTime = runTime.value()+runTime.deltaTValue();
-    if (newTime>runTime.endTime().value()) runTime.setDeltaT(runTime.endTime().value()-runTime.value(),false); 
-    else if (newTime+0.5*runTime.deltaTValue() > runTime.endTime().value()) runTime.setDeltaT((runTime.endTime().value()-runTime.value())/2.0,false); 
+    if (newTime>runTime.endTime().value()) runTime.setDeltaT(runTime.endTime().value()-runTime.value()+SMALL,false); 
+    else if (newTime+0.5*runTime.deltaTValue() > runTime.endTime().value()) runTime.setDeltaT((runTime.endTime().value()-runTime.value())/2.0,true); 
     Info<< "deltaT = " <<  runTime.deltaTValue() << endl;
 }
 
