@@ -4,10 +4,10 @@ makeType=${1:-libso}
 set -x
 
 thermophysicalModels/Allwmake
-wmake libso fvMotionSolver
-wmake libso finiteVolume
-wmake libso meshTools
-wmake libso OpenFOAM
+wmake -j libso fvMotionSolver
+wmake -j libso finiteVolume
+wmake -j libso meshTools
+wmake -j libso OpenFOAM
 transportModels/Allwmake
 solidModels/Allwmake
 # ----------------------------------------------------------------- end-of-file

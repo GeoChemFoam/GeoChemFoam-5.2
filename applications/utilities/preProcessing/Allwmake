@@ -3,7 +3,7 @@ cd ${0%/*} || exit 1    # run from this directory
 makeType=${1:-libso}
 set -x
 
-wmake erodeFoam
-wmake smoothSolidSurface 
-wmake mapFields
+wmake -j erodeFoam
+wmake -j smoothSolidSurface 
+wmake -j mapFields
 # ----------------------------------------------------------------- end-of-file

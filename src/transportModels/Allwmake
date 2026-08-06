@@ -3,12 +3,12 @@ cd ${0%/*} || exit 1    # run from this directory
 makeType=${1:-libso}
 set -x
 
-wmake $makeType interfaceProperties
-wmake $makeType twoPhaseProperties
-wmake $makeType immiscibleIncompressibleTwoPhaseMixture
-wmake $makeType twoPhasePhaseFieldMixture
-wmake $makeType incompressible
-wmake $makeType immiscibleIncompressibleTwoPhasePhaseFieldMixture
+wmake -j $makeType interfaceProperties
+wmake -j $makeType twoPhaseProperties
+wmake -j $makeType immiscibleIncompressibleTwoPhaseMixture
+wmake -j $makeType twoPhasePhaseFieldMixture
+wmake -j $makeType incompressible
+wmake -j $makeType immiscibleIncompressibleTwoPhasePhaseFieldMixture
 
 
 # ----------------------------------------------------------------- end-of-file

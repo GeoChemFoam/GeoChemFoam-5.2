@@ -3,20 +3,20 @@ cd ${0%/*} || exit 1    # run from this directory
 makeType=${1:-libso}
 set -x
 
-wmake processPoroPerm
-wmake processPoroSurf
-wmake processConcentration
-wmake processMaxVelocity
-wmake processPhaseConcentration
-wmake processInterfaceTransfer
-wmake processSaturation
-wmake processMeshCellCenters
-wmake processSolidArea
-wmake processHeatTransfer
-wmake processRelPerm
-wmake processRelPermPF
-wmake processSpeciesTransfer
-wmake processFF
-wmake processDispersion
-wmake processStressStrain
+wmake -j processPoroPerm
+wmake -j processPoroSurf
+wmake -j processConcentration
+wmake -j processMaxVelocity
+wmake -j processPhaseConcentration
+wmake -j processInterfaceTransfer
+wmake -j processSaturation
+wmake -j processMeshCellCenters
+wmake -j processSolidArea
+wmake -j processHeatTransfer
+wmake -j processRelPerm
+wmake -j processRelPermPF
+wmake -j processSpeciesTransfer
+wmake -j processFF
+wmake -j processDispersion
+wmake -j processStressStrain
 # ----------------------------------------------------------------- end-of-file

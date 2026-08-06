@@ -3,6 +3,6 @@ cd ${0%/*} || exit 1    # run from this directory
 makeType=${1:-libso}
 set -x
 
-wmake $makeType src 
+wmake -j $makeType src 
 
 # ----------------------------------------------------------------- end-of-file
