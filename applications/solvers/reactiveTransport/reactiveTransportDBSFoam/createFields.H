@@ -33,25 +33,40 @@ volScalarField eps
         "eps",
         runTime.timeName(),
         mesh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    mesh
+    mesh,
+    dimensionedScalar("eps",dimless,1)
 );
 
-surfaceScalarField nEpsf
+volScalarField epsSmooth
 (
-   IOobject
-   (
-      "nEpsf",
-      runTime.timeName(),
-      mesh,
-      IOobject::NO_READ,
-      IOobject::NO_WRITE
-   ),
-   mesh,
-   dimensionedScalar("nEpsf",dimArea, 0.0)
+    IOobject
+    (
+        "epsSmooth",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    eps
 );
+
+scalar cS = simple.dict().lookupOrDefault<scalar>("cS", 0.0);
+label  nS = simple.dict().lookupOrDefault<label>("nS", 0);
+
+for(int i=0;i<nS;i++)
+{
+     epsSmooth = cS*fvc::average(fvc::interpolate(epsSmooth))+(1-cS)*epsSmooth;
+}
+
+dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
+
+volVectorField gradEps = fvc::grad(eps);
+surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
+surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+surfaceScalarField  nEpsf = nEpsv & mesh.Sf();
 
 Info<< "Reading transportProperties\n" << endl;
 
@@ -88,14 +103,26 @@ autoPtr<incompressible::turbulenceModel> turbulence
     incompressible::turbulenceModel::New(U, phi, laminarTransport)
 );
 
-dimensionedScalar kf("kf",transportProperties);
+dimensionedScalar kf(dimensionedScalar::getOrDefault("kf",transportProperties,dimless/sqr(dimLength),Zero));
+
+
+volScalarField Kinv
+(
+    IOobject
+    (
+        "Kinv",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    kf*pow(1-eps,2)/pow(eps,3)
+);
 
 dimensionedScalar Mw("Mw",transportProperties);
 
 dimensionedScalar rhos("rhos", transportProperties);
 
-//permeability
-volScalarField Kinv = kf*pow(1-eps,2)/pow(eps,3);
 
 Info << "Reading reaction rate if present\n" << endl;
 volScalarField R
@@ -112,7 +139,6 @@ volScalarField R
     dimensionedScalar("R",dimless/dimTime, 0.0)
 );
 
-dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
 
 #include "createMRF.H"
 #include "createFvOptions.H"

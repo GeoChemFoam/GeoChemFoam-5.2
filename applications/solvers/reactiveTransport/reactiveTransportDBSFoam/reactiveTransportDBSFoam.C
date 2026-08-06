@@ -92,29 +92,11 @@ int main(int argc, char *argv[])
         //permeability
         Kinv = kf*pow(1-eps,2)/pow(eps,3);
 
-        volVectorField gradEps = fvc::grad(eps);
-        surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
-        surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+        gradEps = fvc::grad(eps);
+        gradEpsf = fvc::interpolate(gradEps);
+        nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
         nEpsf = nEpsv & mesh.Sf();
 
-        volScalarField a = mag(fvc::grad(eps));
-
-        scalar lambda = psiCoeff;
-
-        if (VoS=="VoS-psi")
-        {
-            scalar As = a.weightedAverage(mesh.V()).value();
-
-            a = a*(1-eps)*(1e-3+eps);
-
-            if (adaptPsiCoeff) lambda = As/a.weightedAverage(mesh.V()).value();
-
-            a = lambda*a;
-
-
-            Info << "psiCoeff=" << lambda << endl;
-       }
-    	
         steadyStateControl steadyState(mesh);
         while (steadyState.loop())
         {

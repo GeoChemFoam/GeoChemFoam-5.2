@@ -13,25 +13,11 @@
             }
         }
 
-        if (VoS=="VoS-psi")
-        {
-            R  += Mw/rhos*Rj*a;
-        }
-        else if (VoS=="iVoS")
-        {
-            surfaceScalarField phiR = Mw/rhos*fvc::interpolate(Rj)*nEpsf;
+        surfaceScalarField phiR = Mw/rhos*fvc::interpolate(Rj)*nEpsf;
 
-            surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
+        surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
 
-            R+=eps*fvc::div(phiR)-fvc::div(phiREps);
-        }
-        else
-        {
-             Info << "VoS-scheme " << VoS << " does not exist" << endl;
-             Info<< "VoS-scheme should be equal to VoS-psi or iVoS"
-             << endl
-             << abort(FatalError);
-        } 
+        R+=eps*fvc::div(phiR)-fvc::div(phiREps);
     }
 
 
@@ -55,28 +41,15 @@
                 }
             }
 
-            if (VoS=="VoS-psi")
-            {
-                Ri += scoeffj[i]*a*Rj; 
-            }
-            else if (VoS=="iVoS")
-            {
-                surfaceScalarField phiR = -scoeffj[i]*fvc::interpolate(Rj)*nEpsf;
+            surfaceScalarField phiR = -scoeffj[i]*fvc::interpolate(Rj)*nEpsf;
 
-                surfaceScalarField phiREps = scoeffj[i]*fvc::interpolate(Rj)*fvc::flux(-nEpsf,eps,"div(nEpsf,eps)");
-                Ri += fvc::div(phiREps)-eps*fvc::div(phiR);
-            }
-            else
-            {
-                Info<< "VoS-scheme should be equal to VoS-psi or iVoS"
-                << endl
-                << abort(FatalError);
-            }
+            surfaceScalarField phiREps = scoeffj[i]*fvc::interpolate(Rj)*fvc::flux(-nEpsf,eps,"div(nEpsf,eps)");
+            Ri += fvc::div(phiREps)-eps*fvc::div(phiR);
         }
 
         volScalarField D = eps*DYi;
                 
-        while (steadyState.correctNonOrthogonal())
+        while (simple.correctNonOrthogonal())
         {
             fvScalarMatrix YiEqn
             (

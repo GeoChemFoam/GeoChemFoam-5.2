@@ -5,7 +5,7 @@
     tmp<fvVectorMatrix> tUEqn
     (
         (1/eps/eps)*fvm::div(phi, U)
-      + 1/eps*MRF.DDt(U)
+      + (1/eps/eps)*MRF.DDt(U)
       - fvm::laplacian(nu/fvc::interpolate(eps),U)//+ turbulence->divDevReff(U)
       + fvm::Sp(nu*Kinv,U)
      ==

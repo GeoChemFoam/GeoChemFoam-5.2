@@ -84,7 +84,6 @@ SIMPLE
 
 STEADYSTATE
 {
-    VoS iVoS;
     momentumPredictor no;
     nNonOrthogonalCorrectors 0;
     nCorrectors NCORR;
