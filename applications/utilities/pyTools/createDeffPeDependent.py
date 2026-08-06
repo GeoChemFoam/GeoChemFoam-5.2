@@ -28,6 +28,7 @@ alpha2z = sys.argv[14]
 NPX = int(sys.argv[15])
 NPY = int(sys.argv[16])
 NPZ = int(sys.argv[17])
+name = sys.argv[18]
 
 micro_por_array = [float(x) for x in  micro_por.split(',')]
 tau_array = [float(x) for x in tau.split(',')]
@@ -774,7 +775,7 @@ data = [
 "    arch        \"LSB;label=32;scalar=64\";\n",
 "    class       volTensorField;\n",
 "    location    \"0\";\n",
-"    object      D;\n",
+"    object      "+name+";\n",
 "}\n",
 "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n",
 "\n",
@@ -1138,7 +1139,7 @@ data.extend([
 ])
 
 # Write data to file
-with open(output_path+'0/D', 'w') as f:
+with open(output_path+'0/'+name, 'w') as f:
   f.writelines(data)
   f.close()
 

@@ -45,20 +45,20 @@ then
         srun python $GCFOAM_DIR/applications/utilities/pyTools/createT.py $dimension $NPX $NPY $NPZ 0.0 1.0 "zeroGradient" "fixedValue" 
 	if [[ "$model" == "tortuosity" ]];then
           echo "Calculate micro effective diffusion coefficient"
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
         fi
     else
         mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createT.py $dimension $NPX $NPY $NPZ 0.0 1.0 "zeroGradient" "fixedValue" 
 	if [[ "$model" == "tortuosity" ]];then
           echo "Calculate micro effective diffusion coefficient"
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
         fi
     fi
 else
     python $GCFOAM_DIR/applications/utilities/pyTools/createT.py $dimension $NPX $NPY $NPZ 0.0 1.0 "zeroGradient" "fixedValue" 
     if [[ "$model" == "tortuosity" ]];then
       echo "Calculate micro effective diffusion coefficient"
-      python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+      python $GCFOAM_DIR/applications/utilities/pyTools/createDefftort.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
     fi
 fi
 

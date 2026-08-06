@@ -18,6 +18,7 @@ tau = sys.argv[4]
 NPX = int(sys.argv[5])
 NPY = int(sys.argv[6])
 NPZ = int(sys.argv[7])
+name = sys.argv[8]
 
 
 
@@ -717,7 +718,7 @@ data = [
 "    arch        \"LSB;label=32;scalar=64\";\n",
 "    class       volTensorField;\n",
 "    location    \"0\";\n",
-"    object      D;\n",
+"    object      "+name+";\n",
 "}\n",
 "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //\n",
 "\n",
@@ -1257,7 +1258,7 @@ data.extend([
 ])
 
 # Write data to file
-with open(output_path+'0/D', 'w') as f:
+with open(output_path+'0/'+name, 'w') as f:
   f.writelines(data)
   f.close()
 
