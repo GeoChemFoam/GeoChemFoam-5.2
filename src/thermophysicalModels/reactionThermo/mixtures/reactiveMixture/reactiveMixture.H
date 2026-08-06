@@ -49,13 +49,16 @@ protected:
 
         wordList kineticPhase_;
         wordList kineticPhaseReaction_;
-        
+
+        PtrList<dimensionedScalar> Mws_;
+        PtrList<dimensionedScalar> rhos_;
         PtrList<dimensionedScalar> Ke_;
         PtrList<dimensionedScalar> k0_;
         PtrList<scalarList> scoeff_;
         PtrList<labelList> kiSpeciesIndex_;
         PtrList<PtrList<dimensionedScalar> > ki_;
-        
+
+        PtrList<volScalarField> Ws_;
         PtrList<volScalarField> Omega_;
         PtrList<volScalarField> R_;
         
@@ -111,7 +114,22 @@ public:
     {
         return kineticPhaseReaction_;
     }
-    
+
+    const dimensionedScalar Mws(label i)
+    {
+        return Mws_[i];
+    }
+
+    const dimensionedScalar rhos(label i)
+    {
+        return rhos_[i];
+    }
+
+    const volScalarField& Ws(label i)
+    {
+        return Ws_[i];
+    }
+
     const volScalarField& omega(label i)
     {
         return Omega_[i];

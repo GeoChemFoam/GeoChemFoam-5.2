@@ -33,11 +33,14 @@ Foam::reactiveMixture::reactiveMixture
     basicMultiComponentMixture(thermoDict, specieNames, mesh),
     kineticPhase_(thermoDict.subDict("kineticPhases").toc()),
     kineticPhaseReaction_(thermoDict.subDict("kineticPhaseReactions").toc()),
+    Mws_(kineticPhaseReaction_.size()),
+    rhos_(kineticPhaseReaction_.size()),
     Ke_(kineticPhase_.size()),
     k0_(kineticPhaseReaction_.size()),
     scoeff_(kineticPhaseReaction_.size()),
     kiSpeciesIndex_(kineticPhaseReaction_.size()),
     ki_(kineticPhaseReaction_.size()),
+    Ws_(kineticPhase_.size()),
     Omega_(kineticPhase_.size()),
     R_(kineticPhaseReaction_.size()),
     component1Index_(NULL),
@@ -88,6 +91,25 @@ Foam::reactiveMixture::reactiveMixture
 		new dimensionedScalar("Ke",kpSubDict)
 	);
 	
+
+        Ws_.set
+        (
+            i,
+            new volScalarField
+            (
+                IOobject
+                (
+                    "Ws_" + kineticPhase_[i],
+                    mesh.time().timeName(),
+                    mesh,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::AUTO_WRITE
+                ),
+                mesh,
+                dimensionedScalar("Ws_" + kineticPhase_[i], dimless, 1)
+            )
+        );
+
         Omega_.set
         (
             i,
@@ -110,6 +132,19 @@ Foam::reactiveMixture::reactiveMixture
     forAll(kineticPhaseReaction_, j)
     {
         dictionary kprSubDict = kprDict.subDict(kineticPhaseReaction_[j]);
+
+        Mws_.set
+        (
+            j,
+            new dimensionedScalar("Mws", kprSubDict)
+        );
+
+        rhos_.set
+        (
+            j,
+            new dimensionedScalar("rhos", kprSubDict)
+        );
+
         k0_.set
 	(
 		j,

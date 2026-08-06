@@ -33,6 +33,8 @@ kineticPhaseReactions
 {
   calcite
   {
+      Mws Mws [ 1 0 0 0 -1 0 0 ] Mw_s;
+      rhos   rhos [ 1 -3 0 0 0 0 0 ] rho_s;
       species
       {
           C

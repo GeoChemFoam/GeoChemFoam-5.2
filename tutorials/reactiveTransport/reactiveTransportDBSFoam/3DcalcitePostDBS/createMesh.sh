@@ -213,11 +213,11 @@ then
 
   cp constant/transportProperties1 constant/transportProperties
   sed -i "s/Visc/$Visc/g" constant/transportProperties
-  sed -i "s/rho_s/$rhos/g" constant/transportProperties
-  sed -i "s/Mw_s/$Mws/g" constant/transportProperties
   sed -i "s/k_f/$kf/g" constant/transportProperties
 
   cp constant/thermoPhysicalProperties1 constant/thermoPhysicalProperties
+  sed -i "s/rho_s/$rhos/g" constant/thermoPhysicalProperties
+  sed -i "s/Mw_s/$Mws/g" constant/thermoPhysicalProperties
   sed -i "s/Diff/$Diff/g" constant/thermoPhysicalProperties
   sed -i "s/s_coeff/$scoeff/g" constant/thermoPhysicalProperties
   sed -i "s/k_reac/$kreac/g" constant/thermoPhysicalProperties

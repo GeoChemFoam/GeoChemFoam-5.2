@@ -119,10 +119,6 @@ volScalarField Kinv
     kf*pow(1-eps,2)/pow(eps,3)
 );
 
-dimensionedScalar Mw("Mw",transportProperties);
-
-dimensionedScalar rhos("rhos", transportProperties);
-
 
 Info << "Reading reaction rate if present\n" << endl;
 volScalarField R
@@ -139,6 +135,24 @@ volScalarField R
     dimensionedScalar("R",dimless/dimTime, 0.0)
 );
 
+volScalarField Ri
+(
+    IOobject
+    (
+        "Ri",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar
+    (
+        "zero",
+        dimMoles/dimVolume/dimTime,
+        0.0
+    )
+);
 
 #include "createMRF.H"
 #include "createFvOptions.H"

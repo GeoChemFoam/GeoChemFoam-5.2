@@ -2,18 +2,23 @@
     R = 0*R;
     forAll(kineticPhaseReactions,j)
     {
+        dimensionedScalar Mws = speciesMixture.Mws(j);
+        dimensionedScalar rhos = speciesMixture.rhos(j);
         volScalarField Rj = speciesMixture.Rate(j);
-
+        volScalarField wsj = 1-eps;
         forAll(kineticPhases,k)
         {
             if (kineticPhaseReactions[j]==kineticPhases[k])
             {
+                volScalarField ws    = speciesMixture.Ws(k);
                 volScalarField omega = speciesMixture.omega(k);
                 Rj *= (1-omega);
+                wsj*=ws;
             }
         }
 
-        surfaceScalarField phiR = Mw/rhos*fvc::interpolate(Rj)*nEpsf;
+        surfaceScalarField wsjf = fvc::interpolate(wsj)/(fvc::interpolate(1-eps+1e-15));
+        surfaceScalarField phiR = Mws/rhos*fvc::interpolate(Rj)*wsjf*nEpsf;
 
         surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
 
@@ -26,7 +31,7 @@
 	volScalarField& Yi = speciesMixture.Y(i);
         dimensionedScalar DYi = speciesMixture.DY(i);
         bool hasTensorDYi = speciesMixture.hasTensorDY(i);
-        volScalarField Ri = 0*rhos/Mw*R;
+        Ri = 0*Ri;
 
         forAll(kineticPhaseReactions,j)
         {
