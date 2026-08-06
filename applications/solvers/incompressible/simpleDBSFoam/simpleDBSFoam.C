@@ -78,6 +78,11 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "initContinuityErrs.H"
 
+    const Switch stokesDBS(simple.dict().getOrDefault<Switch>("stokesDBS", false));
+    Info<< "simpleDBSFoam momentum mode: "
+        << (stokesDBS ? "Stokes/creeping-flow DBS" : "full DBS")
+        << nl << endl;
+
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
