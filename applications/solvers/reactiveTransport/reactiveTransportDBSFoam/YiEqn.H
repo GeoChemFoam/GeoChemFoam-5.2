@@ -77,7 +77,7 @@
 
             YiEqn.relax();
             YiEqn.solve(mesh.solver("Yi"));
-            Yi = max(Yi,0*Yi);
+            //Yi = max(Yi,0*Yi);
         }
 
 	Info<< solutionSpecies[i] << " concentration = "

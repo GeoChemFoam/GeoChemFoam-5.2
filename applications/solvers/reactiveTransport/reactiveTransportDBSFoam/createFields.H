@@ -61,12 +61,45 @@ for(int i=0;i<nS;i++)
      epsSmooth = cS*fvc::average(fvc::interpolate(epsSmooth))+(1-cS)*epsSmooth;
 }
 
+
+//intrinsic surface area (m^2/m^3)
+volScalarField aI
+(
+    IOobject
+    (
+        "aI",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("aI",dimArea/dimVolume,0.0)
+);
+
+volScalarField aSurf
+(
+    IOobject
+    (
+        "aSurf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    aI
+);
+
 dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
 
 volVectorField gradEps = fvc::grad(eps);
 surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
 surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
 surfaceScalarField  nEpsf = nEpsv & mesh.Sf();
+
+surfaceScalarField eps_f = upwind<scalar>(mesh, -nEpsf).interpolate(eps);
+
+aSurf = aI - fvc::div(eps_f*nEpsf)+eps*fvc::div(nEpsf);
 
 Info<< "Reading transportProperties\n" << endl;
 

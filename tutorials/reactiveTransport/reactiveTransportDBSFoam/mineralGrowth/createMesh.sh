@@ -65,7 +65,6 @@ NPZ=1
 
 #### END OF USER INPUT #######################################################
 
-
 if [ $format != 'raw' ]
 then
         echo "ERROR: only raw format is implemented for this solver"
@@ -91,8 +90,6 @@ then
      echo "ERROR: no dynamicmeshRef for 2D simulations"
      exit
   fi
-
-
 fi
 
 #Insert dimensions in postProcessDict
@@ -215,11 +212,11 @@ then
 
   cp constant/transportProperties1 constant/transportProperties
   sed -i "s/Visc/$Visc/g" constant/transportProperties
-  sed -i "s/rho_s/$rhos/g" constant/transportProperties
-  sed -i "s/Mw_s/$Mws/g" constant/transportProperties
   sed -i "s/k_f/$kf/g" constant/transportProperties
 
   cp constant/thermoPhysicalProperties1 constant/thermoPhysicalProperties
+  sed -i "s/rho_s/$rhos/g" constant/thermoPhysicalProperties
+  sed -i "s/Mw_s/$Mws/g" constant/thermoPhysicalProperties
   sed -i "s/Diff/$Diff/g" constant/thermoPhysicalProperties
   sed -i "s/s_coeff/$scoeff/g" constant/thermoPhysicalProperties
   sed -i "s/k_reac/$kreac/g" constant/thermoPhysicalProperties

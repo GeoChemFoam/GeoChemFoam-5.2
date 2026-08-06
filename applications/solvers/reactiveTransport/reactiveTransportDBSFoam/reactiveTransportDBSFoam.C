@@ -30,6 +30,7 @@ Description
 #include "steadyStateControl.H"
 #include "dynamicFvMesh.H"
 #include "fvOptions.H"
+#include "upwind.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -102,6 +103,10 @@ int main(int argc, char *argv[])
             gradEpsf = fvc::interpolate(gradEps);
             nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
             nEpsf = nEpsv & mesh.Sf();
+
+            eps_f = upwind<scalar>(mesh, -nEpsf).interpolate(eps);
+ 
+            aSurf = aI - fvc::div(eps_f*nEpsf)+eps*fvc::div(nEpsf);
         }
 
         steadyStateControl steadyState(mesh);
