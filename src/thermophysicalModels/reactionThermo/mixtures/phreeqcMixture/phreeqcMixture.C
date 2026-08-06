@@ -21,224 +21,305 @@ License
 #include "fvcAverage.H"
 #include "surfaceInterpolate.H"
 #include "reactingWallFvPatchScalarField.H"
+#include "error.H"
+#include "Pstream.H"
+#include <algorithm>
+#include <chrono>
+#include <vector>
+#include <iomanip>
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 void Foam::phreeqcMixture::initialise()
 {
-	//get number of cells
-	int ncells = mesh_.cells().size();
-	id_ = RM_Create(ncells, 1);
+    //get number of cells
+    int ncells = mesh_.cells().size();
+    id_=phreeqcRM_->create(ncells, 1);
 
-	//set porosity=1.0
-	double* porosity = new double[ncells];
-	for (int i = 0; i < ncells; i++) porosity[i] = 1.0;
-	RM_SetPorosity(id_, porosity);
-	delete[] porosity;
+    //set porosity from eps when available, otherwise use 1.0
+    hasPorosityField_ = mesh_.foundObject<volScalarField>("eps");
+    porosity_.assign(static_cast<std::size_t>(ncells), 1.0);
 
-	
-	//concentration=mol/L
-	RM_SetUnitsSolution(id_, 2);
-
-	//Save species for multi-species transport
-	RM_SetSpeciesSaveOn(id_, true);
-
-	//load phreeqc database
-	RM_LoadDatabase(id_, "constant/GeoChem.dat");
-
-	//load reaction
-	RM_RunFile(id_, 1, 1, 0, "constant/phreeqcReactions");
-
-	//solution component list
-	std::ostringstream oss;
-
-
-	//init surface and solution
-	forAll(mesh_.cells(),celli)
-	{
-		oss << "COPY solution 0 " << celli  << "\n";
-		oss << "END" << "\n";
+    if (hasPorosityField_)
+    {
+        const volScalarField& eps = mesh_.lookupObject<volScalarField>("eps");
+        forAll(mesh_.cells(), celli)
+        {
+            porosity_[celli] = eps[celli];
+        }
     }
 
-	//equilibrate surface with solution
-	forAll(mesh_.cells(),celli)
-	{
-		oss << "SURFACE " << celli << "\n";
-		oss << "-equilibrate with solution " << celli << "\n";
-		forAll(surfaceMasters_, j)
-		{
-			double area = 0.0;
-			double mole = 0.0;
-	        const volScalarField::Boundary& Surfbf = Surf_.boundaryField();
-			forAll(Surfbf,patchi)
-			{
-				if (Surfbf[patchi].type() == "reactingWall")
-				{
-					const reactingWallFvPatchScalarField& Surfcap = refCast<const reactingWallFvPatchScalarField>(Surfbf[patchi]);
-					const labelList& cellOwner = Surfcap.patch().faceCells();
-					const surfaceScalarField& magSf = mesh_.magSf();
-					const wordList& masters = Surfcap.get_surface_masters();
-					const scalarList& density   = Surfcap.get_density();//mol/m^2
-					forAll(masters,i)
-					{
-						if (masters[i]==surfaceMasters_[j])
-						{
-							forAll(Surfbf[patchi],facei)
-							{
-								if (cellOwner[facei]==celli)
-								{
-									mole+=density[i]*magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]];//mol/L
-									area+=magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]] / 1000;//m^2/L
-								}
-							}
-						}
-					}
-				}
-			}	
-            if (area>0) oss << surfaceMasters_[j] << "  " << mole << " " << area  << " 1" << "\n";
-            else oss << surfaceMasters_[j] << "  " << "0 1 1" << "\n";
-		}
-		oss << "END" << "\n";
-	}
+    hasSurfAreaField_ = mesh_.foundObject<volScalarField>("aSurf");
+    aSurf_.assign(static_cast<std::size_t>(ncells),0.0);
 
-	//run phreeqc keywords
-	RM_RunString(id_, 1, 1, 0, oss.str().c_str());
+    if (hasSurfAreaField_)
+    {
+        const volScalarField& aSurf = mesh_.lookupObject<volScalarField>("aSurf");
+        forAll(mesh_.cells(), celli)
+        {
+            aSurf_[celli] = aSurf[celli];
+        }
+    }
 
-	//init Phreeqc worker module
-	int* ic1 = (int *)malloc((size_t)(7 * ncells * sizeof(int)));
-	forAll(mesh_.cells(),celli)
-	{
-		ic1[celli] = celli;               // Solution  i
-		ic1[ncells + celli] = -1;      // Equilibrium phases none
-		ic1[2 * ncells + celli] = -1;       // Exchange none
-		ic1[3 * ncells + celli] = celli;      // Surface i
-		ic1[4 * ncells + celli] = -1;      // Gas phase none
-		ic1[5 * ncells + celli] = -1;      // Solid solutions none
-		ic1[6 * ncells + celli] = -1;      // Kinetics none
-	}
-	RM_InitialPhreeqc2Module(id_, ic1, 0, 0);
-	free(ic1);
+    phreeqcRM_->setPorosity(porosity_.data());
+    
+    //concentration=mol/L
+    phreeqcRM_->setUnitsSolution(2);
 
-	//Run Phreeqc to init concentration
-	RM_RunCells(id_);
+    //Save species for multi-species transport
+    phreeqcRM_->setSpeciesSaveOn(true);
 
-	//find components
-	RM_FindComponents(id_);
-	
-	//get number of solution species
-	int nsol = RM_GetSpeciesCount(id_);
+    //load phreeqc database
+    phreeqcRM_->loadDatabase("constant/GeoChem.dat");
 
-	//display number of silution species
-	Info << "nsol:" << nsol << "\n";
+    //load reaction
+    phreeqcRM_->runFile(1, 1, 0, "constant/phreeqcReactions");
 
-	//set solution speciesvector
-	char** components = (char **)malloc((size_t)(nsol * sizeof(char *)));
+    surfaceMasterDensity_.setSize(surfaceMasters_.size());
+    forAll(surfaceMasters_, i)
+    {
+        surfaceMasterDensity_.set
+        (
+            i,
+            new volScalarField
+            (
+                IOobject
+                (
+                    surfaceMasters_[i],
+                    mesh_.time().timeName(),
+                    mesh_,
+                    IOobject::MUST_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                mesh_
+            )
+        );
+    }
 
-	//get solution species name
-	for (int i = 0; i < nsol; i++)
-	{
-		components[i] = (char *)malloc((size_t)(20 * sizeof(char *)));
-		RM_GetSpeciesName(id_, i, components[i], 20);
-	}
 
-	//get number of surface species
-	int nsurf = RM_GetSurfaceSpeciesCount(id_);
+    //solution component list
+    std::ostringstream oss;
 
-	//display number of surface species
-	Info << "nsurf:" << nsurf << "\n";
 
-	//set solution speciesvector
-	char** surfComponents = (char **)malloc((size_t)(nsurf * sizeof(char *)));
+    //init surface and solution
+    forAll(mesh_.cells(),celli)
+    {
+        oss << "COPY solution 0 " << celli  << "\n";
+        oss << "END" << "\n";
+    }
 
-	//get solution species name
-	for (int i = 0; i < nsurf; i++)
-	{
-		surfComponents[i] = (char *)malloc((size_t)(20 * sizeof(char *)));
-		RM_GetSurfaceSpeciesName(id_, i, surfComponents[i], 20);
-	}
-	
-	//save component index map
-	componentSolutionIndex_ = (int*)malloc((size_t)(species_.size() * sizeof(int)));
-	componentSurfaceIndex_  = (int*)malloc((size_t)(surfaceSpecies_.size() * sizeof(int)));
-	forAll(species_, i)
-	{
-		for (int j = 0; j < nsol; j++)
-		{
-			std::string component = components[j];
-			if (component == species_[i])
-			{
-				componentSolutionIndex_[i] = j;
-			}
-		}
-	}
+    surfaceSolutionIndex_.assign(static_cast<std::size_t>(ncells), -1);
 
-	forAll(surfaceSpecies_, i)
-	{
-		for (int j = 0; j < nsurf; j++)
-		{
-			std::string component = surfComponents[j];
-			if (component == surfaceSpecies_[i])
-			{
-				componentSurfaceIndex_[i] = j;
-			}
-		}
-	}
+    nSurf_=0;
+    //Get cell index for surfaces
+    forAll(mesh_.cells(),celli)
+    {
+        if (aSurf_[celli]>1e-3)
+        {
+            surfaceSolutionIndex_[celli]=nSurf_++;
+        }
+    }
 
-	//concentration, adsorption and surface potential
-	if (nsol>0) concentration_      = (double *)malloc((size_t)(nsol * ncells * sizeof(double)));
-	if (nsurf>0) 
-	{
-		surfConcentration_  = (double *)malloc((size_t)(nsurf * ncells * sizeof(double)));
-		surfArea_           = (double *)malloc((size_t)(ncells * sizeof(double)));
-		surfPotential_      = (double *)malloc((size_t)(ncells * sizeof(double)));
-	}
-	
-	RM_GetSpeciesConcentrations(id_, concentration_);
+    //equilibrate surface with solution
+    forAll(mesh_.cells(),celli)
+    {
+        if (surfaceMasters_.size()>0)
+        {
+            // All surface masters currently share the same PHREEQC surface
+            // charge and therefore the same reacting-wall area. Use the first
+            // master field only to detect cells with boundary surface area.
+            const volScalarField::Boundary& Surfbf = surfaceMasterDensity_[0].boundaryField();
+            forAll(Surfbf,patchi)
+            {
+                if (Surfbf[patchi].type() == "reactingWall")
+                {
+                    const labelList& cellOwner = Surfbf[patchi].patch().faceCells();
+                    forAll(Surfbf[patchi],facei)
+                    {
+                        if (cellOwner[facei]==celli && surfaceSolutionIndex_[celli]==-1)
+                        {
+                            surfaceSolutionIndex_[celli]=nSurf_++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	RM_GetSurfaceSpeciesConcentrations(id_, surfConcentration_);
-	RM_GetSurfaceArea(id_,"Surf",surfArea_);
-	RM_GetSurfacePotential(id_,"Surf",surfPotential_);
+    //equilibrate surface with solution
+    forAll(mesh_.cells(),celli)
+    {
+        int surfi = surfaceSolutionIndex_[celli];
+        if (surfi==-1) continue;
 
-	//set water saturation for Phreeqc module
-	saturation_ = (double *)malloc((size_t)(ncells * sizeof(double)));
-    for (int i=0;i<ncells;i++) saturation_[i]=1.0;
-    //memset(saturation_,1.0,ncells * sizeof(double));
-	RM_SetSaturation(id_, saturation_);
+        oss << "SURFACE " << surfi << "\n";
+        oss << "-equilibrate with solution " << celli << "\n";
+        forAll(surfaceMasters_, j)
+        {
+            double area = aSurf_[celli]/1000;
+            double mole = surfaceMasterDensity_[j][celli]*aSurf_[celli];
+            const volScalarField::Boundary& Surfbf = surfaceMasterDensity_[j].boundaryField();
+            forAll(Surfbf,patchi)
+            {
+                if (Surfbf[patchi].type() == "reactingWall")
+                {
+                    const labelList& cellOwner = Surfbf[patchi].patch().faceCells();
+                    const surfaceScalarField& magSf = mesh_.magSf();
+                    forAll(Surfbf[patchi],facei)
+                    {
+                        if (cellOwner[facei]==celli)
+                        {
+                            mole+=Surfbf[patchi][facei]*magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]];//mol/L
+                            area+=magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]] / 1000;//m^2/L
+                        }
+                    }
+                }
+            }    
+            oss << surfaceMasters_[j] << "  " << mole << " " << area  << " 1" << "\n";
+        }
+        oss << "END" << "\n";
+    }
 
-	//get concentration from OpenFOAM
-	forAll(species_, i)
-	{
-		volScalarField& Yi = Y_[i];
-		forAll(mesh_.cells(), celli)
-		{
-			concentration_[componentSolutionIndex_[i] * ncells + celli] = Yi[celli];
-		}
-	}
+    Info << oss.str() << endl;
+    //run phreeqc keywords
+    phreeqcRM_->runString(0, 1, 0, oss.str().c_str());
 
-	//get surface concentration from OpenFoam
-	forAll(surfaceSpecies_, i)
-	{
-		forAll(mesh_.cells(), celli)
-		{
-			surfConcentration_[componentSurfaceIndex_[i] * ncells + celli] = 0.0;
-		}
-		volScalarField& Yi = surfaceMixture_.Y(i);
-	    forAll(Yi.boundaryField(), patchi)
-		{
-			if (Surf_.boundaryField()[patchi].type()=="reactingWall")
-			{
-				const labelList& cellOwner = Yi.boundaryField()[patchi].patch().faceCells();
-				const scalarField& Yfaces = Yi.boundaryField()[patchi];
-				const surfaceScalarField& magSf = mesh_.magSf();
-				forAll(Yi.boundaryField()[patchi], facei)
-				{
-					if (surfArea_[cellOwner[facei]]>0)
-					{
-						surfConcentration_[componentSurfaceIndex_[i] * ncells + cellOwner[facei]] += Yfaces[facei] / surfArea_[cellOwner[facei]] * magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]];
-					}
-				}
-			}
-		}
-	}
+    //init Phreeqc worker module
+    std::vector<int> ic1(static_cast<std::size_t>(7 * ncells), -1);
+    forAll(mesh_.cells(),celli)
+    {
+        ic1[celli] = celli;               // Solution  i
+        ic1[ncells + celli] = -1;      // Equilibrium phases none
+        ic1[2 * ncells + celli] = -1;       // Exchange none
+        ic1[3 * ncells + celli] = surfaceSolutionIndex_[celli];      // Surface none
+        ic1[4 * ncells + celli] = -1;      // Gas phase none
+        ic1[5 * ncells + celli] = -1;      // Solid solutions none
+        ic1[6 * ncells + celli] = -1;      // Kinetics none
+    }
+
+    phreeqcRM_->initialPhreeqc2Module(ic1.data(), 0, 0);
+
+    //find components
+    phreeqcRM_->findComponents();
+    
+    //get number of solution species
+    nSolutionSpecies_ = phreeqcRM_->getSpeciesCount();
+
+    //display number of silution species
+    Info << "nsol:" << nSolutionSpecies_ << "\n";
+
+    std::vector<std::string> solutionComponentNames
+    (
+        static_cast<std::size_t>(nSolutionSpecies_)
+    );
+    for (int i = 0; i < nSolutionSpecies_; ++i)
+    {
+        char nameBuffer[256] = {0};
+        phreeqcRM_->getSpeciesName(i, nameBuffer, 256);
+        solutionComponentNames[static_cast<std::size_t>(i)] = nameBuffer;
+    }
+
+    //get number of surface species
+    nSurfaceSpecies_ = phreeqcRM_->getSurfaceSpeciesCount();
+
+    //display number of surface species
+    Info << "nsurf:" << nSurfaceSpecies_ << "\n";
+
+    std::vector<std::string> surfaceComponentNames
+    (
+        static_cast<std::size_t>(nSurfaceSpecies_)
+    );
+    for (int i = 0; i < nSurfaceSpecies_; ++i)
+    {
+        char nameBuffer[256] = {0};
+        phreeqcRM_->getSurfaceSpeciesName(i, nameBuffer, 256);
+        surfaceComponentNames[static_cast<std::size_t>(i)] = nameBuffer;
+    }
+    
+    //save component index map
+    componentSolutionIndex_.assign(species_.size(), -1);
+    componentSurfaceIndex_.assign(surfaceSpecies_.size(), -1);
+    forAll(species_, i)
+    {
+        for (int j = 0; j < nSolutionSpecies_; j++)
+        {
+            const std::string& component =
+                solutionComponentNames[static_cast<std::size_t>(j)];
+            if (component == species_[i])
+            {
+                componentSolutionIndex_[i] = j;
+            }
+        }
+    }
+
+    forAll(surfaceSpecies_, i)
+    {
+        for (int j = 0; j < nSurfaceSpecies_; j++)
+        {
+            const std::string& component =
+                surfaceComponentNames[static_cast<std::size_t>(j)];
+            if (component == surfaceSpecies_[i])
+            {
+                componentSurfaceIndex_[i] = j;
+            }
+        }
+    }
+
+    forAll(species_, i)
+    {
+        if (componentSolutionIndex_[i] < 0)
+        {
+            FatalErrorInFunction
+                << "Unable to map solution species '" << species_[i]
+                << "' to any PhreeqcRM component." << nl
+                << ", nsol=" << nSolutionSpecies_
+                << exit(FatalError);
+        }
+    }
+
+    //concentration, adsorption and surface potential
+    if (nSolutionSpecies_>0)
+    {
+        concentration_.assign
+        (
+            static_cast<std::size_t>(nSolutionSpecies_ * ncells),
+            0.0
+        );
+    }
+    else
+    {
+        concentration_.clear();
+    }
+    if (nSurfaceSpecies_>0) 
+    {
+        surfConcentration_.assign
+        (
+            static_cast<std::size_t>(nSurfaceSpecies_ * ncells),
+            0.0
+        );
+        surfArea_.assign(static_cast<std::size_t>(ncells), 0.0);
+    }
+    else
+    {
+        surfConcentration_.clear();
+        surfArea_.clear();
+    }
+    
+    //Run phreeqc
+    //phreeqcRM_->runCells();
+
+    if (nSolutionSpecies_ > 0)
+    {
+        phreeqcRM_->getSpeciesConcentrations(concentration_.data());
+    }
+    if (nSurfaceSpecies_ > 0)
+    {
+        phreeqcRM_->getSurfaceSpeciesConcentrations(surfConcentration_.data());
+        phreeqcRM_->getSurfaceArea("Surf", surfArea_.data());
+    }
+
+    //set water saturation for Phreeqc module
+    saturation_.assign(static_cast<std::size_t>(ncells), 1.0);
+    phreeqcRM_->setSaturation(saturation_.data());
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -252,52 +333,22 @@ Foam::phreeqcMixture::phreeqcMixture
 :
     solutionSurfaceMultiComponentMixture(thermoDict, specieNames, mesh),
     mesh_(mesh),
-    Surf_
-    (
-        IOobject
-        (
-            "Surf",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-    ),
-    mesh,
-	dimensionedScalar("Surf", dimMoles/dimArea, 0.0)
-    ),
-    I_
-    (
-        IOobject
-        (
-            "I",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-	    dimensionedScalar("I", dimMoles/dimVolume, 0.0)
-    ),
-    psi_
-    (
-        IOobject
-        (
-            "psi",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-	    dimensionedScalar("psi", dimensionSet(1,2,-3,0,0,-1,0), 0.0)
-    ),
-    saturation_(NULL),
-    componentSolutionIndex_(NULL),
-    componentSurfaceIndex_(NULL),
-    concentration_(NULL),
-    surfConcentration_(NULL),
-    surfArea_(NULL),
-    surfPotential_(NULL)
+    surfaceMasterDensity_(),
+    phreeqcRM_(phreeqcRMAdapter::New()),
+    nSurf_(0),
+    nSolutionSpecies_(0),
+    nSurfaceSpecies_(0),
+    saturation_(),
+    hasPorosityField_(false),
+    porosity_(),
+    hasSurfAreaField_(false),
+    aSurf_(),
+    surfaceSolutionIndex_(),
+    componentSolutionIndex_(),
+    componentSurfaceIndex_(),
+    concentration_(),
+    surfConcentration_(),
+    surfArea_()
 {
     initialise();
 }
@@ -312,52 +363,22 @@ Foam::phreeqcMixture::phreeqcMixture
 :
     solutionSurfaceMultiComponentMixture(thermoDict, specieNames, mesh, phaseName),
     mesh_(mesh),
-    Surf_
-    (
-        IOobject
-        (
-            "Surf",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-    ),
-    mesh,
-	dimensionedScalar("Surf", dimMoles/dimArea, 0.0)
-    ),
-    I_
-    (
-        IOobject
-        (
-            "I",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-	    dimensionedScalar("I", dimMoles/dimVolume, 0.0)
-    ),
-    psi_
-    (
-        IOobject
-        (
-            "psi",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-	    dimensionedScalar("psi", dimensionSet(1,2,-3,0,0,-1,0), 0.0)
-    ),
-    saturation_(NULL),
-    componentSolutionIndex_(NULL),
-    componentSurfaceIndex_(NULL),
-    concentration_(NULL),
-    surfConcentration_(NULL),
-    surfArea_(NULL),
-    surfPotential_(NULL)
+    surfaceMasterDensity_(),
+    phreeqcRM_(phreeqcRMAdapter::New()),
+    nSurf_(0),
+    nSolutionSpecies_(0),
+    nSurfaceSpecies_(0),
+    saturation_(),
+    hasPorosityField_(false),
+    porosity_(),
+    hasSurfAreaField_(false),
+    aSurf_(),
+    surfaceSolutionIndex_(),
+    componentSolutionIndex_(),
+    componentSurfaceIndex_(),
+    concentration_(),
+    surfConcentration_(),
+    surfArea_()
 {
     initialise();
 }
@@ -367,119 +388,148 @@ Foam::phreeqcMixture::~phreeqcMixture
 (
 )
 {
-	free(saturation_);
-	free(componentSolutionIndex_);
-	free(componentSurfaceIndex_);
-	free(concentration_);
-	free(surfConcentration_);
-	free(surfArea_);
-	free(surfPotential_);
+    const int destroyStatus = phreeqcRM_->destroy();
+    if (destroyStatus != 0)
+    {
+        WarningInFunction
+            << "PhreeqcRM destroy returned non-zero status: "
+            << destroyStatus << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 void Foam::phreeqcMixture::correct()
 {
-	//get number of cells
-	int ncells = mesh_.cells().size();
 
-	//get concentration after transport
-	forAll(species_, i)
-	{
-		volScalarField& Yi = Y_[i];
-		forAll(mesh_.cells(), celli)
-		{
-			concentration_[componentSolutionIndex_[i] * ncells + celli] = Yi[celli];//mol/L
-		}
-	}
+    //get number of cells
+    int ncells = mesh_.cells().size();
+
+    if (hasPorosityField_)
+    {
+        const volScalarField& eps = mesh_.lookupObject<volScalarField>("eps");
+        forAll(mesh_.cells(), celli)
+        {
+            porosity_[celli] = eps[celli];
+        }
+        phreeqcRM_->setPorosity(porosity_.data());
+    }
+
+    //get concentration after transport
+    forAll(species_, i)
+    {
+        volScalarField& Yi = Y_[i];
+        forAll(mesh_.cells(), celli)
+        {
+            concentration_[componentSolutionIndex_[i] * ncells + celli] = Yi[celli];//mol/L
+        }
+    }
 
 
-	//get surface concentration after transport
-	forAll(surfaceSpecies_, i)
-	{
-		forAll(mesh_.cells(), celli)
-		{
-			surfConcentration_[componentSurfaceIndex_[i] * ncells + celli] = 0.0;
-		}
-		volScalarField& Yi = surfaceMixture_.Y(i);
-	    forAll(Yi.boundaryField(), patchi)
-		{
-			if (Surf_.boundaryField()[patchi].type()=="reactingWall")
-			{
-				const labelList& cellOwner = Yi.boundaryField()[patchi].patch().faceCells();
-				const scalarField& Yfaces = Yi.boundaryField()[patchi];
-				const surfaceScalarField& magSf = mesh_.magSf();
-				forAll(Yi.boundaryField()[patchi], facei)
-				{
-					if (surfArea_[cellOwner[facei]]>0)
-					{
-						surfConcentration_[componentSurfaceIndex_[i] * ncells + cellOwner[facei]] += Yfaces[facei] / surfArea_[cellOwner[facei]] * magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]];
-					}
-				}
-			}
-		}
-	}
+    //get surface concentration after transport
+    if (nSurfaceSpecies_ > 0)
+    {
+            forAll(surfaceSpecies_, i)
+            {
+                forAll(mesh_.cells(), celli)
+                {
+                    int surfi = surfaceSolutionIndex_[celli];
+                    if (surfi>-1) surfConcentration_[componentSurfaceIndex_[i] * ncells + celli] = 0.0;
+                }
 
-	//set concentration for Phreeqc module
-	RM_SpeciesConcentrations2Module(id_, concentration_);
-	RM_SurfaceSpeciesConcentrations2Module(id_, surfConcentration_);
+                volScalarField& Yi = surfaceMixture_.Y(i);
+                forAll(mesh_.cells(),celli)
+                {
+                    int surfi = surfaceSolutionIndex_[celli];
+                    if (surfi>-1) surfConcentration_[componentSurfaceIndex_[i] * ncells + celli] += Yi[celli] / surfArea_[celli]*aSurf_[celli];
+                }
+                
+                forAll(Yi.boundaryField(), patchi)
+                {
+                    if (Yi.boundaryField()[patchi].type()=="reactingWall")
+                    {
+                    const labelList& cellOwner = Yi.boundaryField()[patchi].patch().faceCells();
+                    const scalarField& Yfaces = Yi.boundaryField()[patchi];
+                    const surfaceScalarField& magSf = mesh_.magSf();
+                    forAll(cellOwner, facei)
+                    {
+                        if (surfArea_[cellOwner[facei]]>0)
+                        {
+                            surfConcentration_[componentSurfaceIndex_[i] * ncells + cellOwner[facei]] += Yfaces[facei] / surfArea_[cellOwner[facei]] * magSf.boundaryField()[patchi][facei] / mesh_.V()[cellOwner[facei]];
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	//Run phreeqc
-	RM_RunCells(id_);
+    //set concentration for Phreeqc module
+    phreeqcRM_->speciesConcentrations2Module(concentration_.data());
+    if (nSurfaceSpecies_ > 0)
+    {
+        phreeqcRM_->surfaceSpeciesConcentrations2Module(surfConcentration_.data());
+    }
 
-	//get concentration after reactions
-	RM_GetSpeciesConcentrations(id_, concentration_);
-	RM_GetSurfaceSpeciesConcentrations(id_, surfConcentration_);
+    //Run phreeqc
+    phreeqcRM_->runCells();
 
-	//get surface potential
-	RM_GetSurfacePotential(id_,"Surf",surfPotential_);
+    //get concentration after reactions
+    phreeqcRM_->getSpeciesConcentrations(concentration_.data());
+    if (nSurfaceSpecies_ > 0)
+    {
+        phreeqcRM_->getSurfaceSpeciesConcentrations(surfConcentration_.data());
+    }
 
-	//get ionic strength
-	RM_GetSolutionIonicStrength(id_, &I_[0]);
+    //get reaction rate and new vector composition
+    forAll(species_, i)
+    {
+        volScalarField& Yi = Y_[i];
+        forAll(mesh_.cells(), celli)
+        {
+            if (saturation_[celli]>1e-3)
+            {
+                Yi[celli]  = concentration_[componentSolutionIndex_[i] * ncells + celli];//mol/m3
+            }
+        }
+    }
 
-	//get reaction rate and new vector composition
-	forAll(species_, i)
-	{
-		volScalarField& Yi = Y_[i];
-		forAll(mesh_.cells(), celli)
-		{
-			if (saturation_[celli]>1e-3)
-			{
-				Yi[celli]  = concentration_[componentSolutionIndex_[i] * ncells + celli];//mol/m3
-			}
-		}
-	}
+    //get surface concentration
+    if (nSurfaceSpecies_ > 0)
+    {
+            forAll(surfaceSpecies_, i)
+            {
+                volScalarField& Yi = surfaceMixture_.Y(i);
+                forAll(mesh_.cells(),celli)
+                {
+                    int surfi = surfaceSolutionIndex_[celli];
+                    if (surfi>-1) Yi[celli]=surfConcentration_[componentSurfaceIndex_[i] * ncells + celli]/1000;
+                }
 
-	//get surface concentration
-	forAll(surfaceSpecies_, i)
-	{
-		volScalarField& Yi = surfaceMixture_.Y(i);
-		forAll(Yi.boundaryField(), patchi)
-		{
-			if (Surf_.boundaryField()[patchi].type()=="reactingWall")
-			{
-				const labelList& cellOwner = Yi.boundaryField()[patchi].patch().faceCells();
-				scalarField& Yfaces   = Yi.boundaryFieldRef()[patchi];
-				scalarField& psifaces = psi_.boundaryFieldRef()[patchi];
-				forAll(Yi.boundaryField()[patchi], facei)
-				{
-					if (saturation_[cellOwner[facei]]>1e-3)
-					{
-						Yfaces[facei] = surfConcentration_[componentSurfaceIndex_[i] * ncells + cellOwner[facei]]/1000;//kmol/m2
-						psifaces[facei]   = surfPotential_[cellOwner[facei]];
-					}
-				}
-			}
-		}
-	}
+                forAll(Yi.boundaryFieldRef(), patchi)
+                {
+                    if (Yi.boundaryFieldRef()[patchi].type()=="reactingWall")
+                    {
+                    const labelList& cellOwner = Yi.boundaryFieldRef()[patchi].patch().faceCells();
+                    scalarField& Yfaces   = Yi.boundaryFieldRef()[patchi];
+                    forAll(cellOwner, facei)
+                    {
+                        if (saturation_[cellOwner[facei]]>1e-3)
+                        {
+                            Yfaces[facei] = surfConcentration_[componentSurfaceIndex_[i] * ncells + cellOwner[facei]]/1000;//kmol/m2
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Foam::phreeqcMixture::setSaturation(const volScalarField& alpha)
 {
-	forAll(mesh_.cells(), celli)
-	{
-		if (alpha[celli] >1e-3) saturation_[celli] = alpha[celli];
-		else  saturation_[celli]=0;
-	}
-	RM_SetSaturation(id_, saturation_);
+    forAll(mesh_.cells(), celli)
+    {
+        if (alpha[celli] >1e-3) saturation_[celli] = alpha[celli];
+        else  saturation_[celli]=0;
+    }
+    phreeqcRM_->setSaturation(saturation_.data());
 }
 // ************************************************************************* //

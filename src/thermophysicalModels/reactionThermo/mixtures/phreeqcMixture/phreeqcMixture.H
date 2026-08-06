@@ -29,6 +29,9 @@ SourceFiles
 #define phreeqcMixture_H
 
 #include "solutionSurfaceMultiComponentMixture.H"
+#include "phreeqcRMAdapter.H"
+#include "PtrList.H"
+#include <vector>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,36 +53,50 @@ class phreeqcMixture
 	//OpenFOAM mesh
 	const fvMesh& mesh_;
 
-	//surface 
-	volScalarField Surf_;
+	//surface master density fields
+	PtrList<volScalarField> surfaceMasterDensity_;
 
-    //ionic strength
-    volScalarField I_;
-
-    //surface potential
-    volScalarField psi_;
+        // chemistry API adapter
+        autoPtr<phreeqcRMAdapter> phreeqcRM_;
 
 	//index of phreeqc module
 	int id_;
 
+        //number of surfaces in phreeqc
+        int nSurf_;
+
+        //component counts
+	int nSolutionSpecies_;
+	int nSurfaceSpecies_;
+
 	//water saturation
-	double* saturation_;
+	std::vector<double> saturation_;
+
+	//whether porosity is read from the mesh object registry
+	bool hasPorosityField_;
+
+	//porosity passed to PHREEQC
+	std::vector<double> porosity_;
+
+        //whether aI is read from the mesh object registry
+        bool hasSurfAreaField_;
+
+        //surface area passed to PHREEQC
+        std::vector<double> aSurf_;
+
+        //surface solution index
+        std::vector<int> surfaceSolutionIndex_;
 
 	//index mapping from solution species to phreeqc component
-	int* componentSolutionIndex_;
+	std::vector<int> componentSolutionIndex_;
 	//index mapping from surface species to phreeqc component
-	int* componentSurfaceIndex_;
+	std::vector<int> componentSurfaceIndex_;
 	//concentration
-	double* concentration_;
+	std::vector<double> concentration_;
 	//surface concentration
-	double* surfConcentration_;
+	std::vector<double> surfConcentration_;
 	//surface area
-	double* surfArea_;
-	//surface potential
-	double* surfPotential_;
-
-	//selected output
-	double* selectedOutput_;
+	std::vector<double> surfArea_;
 
 
     // Private member functions

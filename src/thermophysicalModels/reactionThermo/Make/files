@@ -1,6 +1,7 @@
 mixtures/basicMultiComponentMixture/basicMultiComponentMixture.C
 mixtures/solutionSurfaceMultiComponentMixture/solutionSurfaceMultiComponentMixture.C
 mixtures/inertMultiComponentMixture/inertMultiComponentMixture.C
+mixtures/phreeqcMixture/phreeqcRMAdapter.C
 mixtures/phreeqcMixture/phreeqcMixture.C
 mixtures/reactiveMixture/reactiveMixture.C
 mixtures/multiComponentTransportMixture/multiComponentTransportMixture.C
