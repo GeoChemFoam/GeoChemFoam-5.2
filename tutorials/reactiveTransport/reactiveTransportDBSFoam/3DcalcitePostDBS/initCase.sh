@@ -55,8 +55,8 @@ NPX="$(tail -n 1 system/NPX)"
 NPY="$(tail -n 1 system/NPY)"
 NPZ="$(tail -n 1 system/NPZ)"
 
-if { [ -f 0/eps ] && grep -q "frontAndBack" 0/eps; } || \
-   { [ -f processor0/0/eps ] && grep -q "frontAndBack" processor0/0/eps; }; then
+if { [ -f constant/polyMesh/boundary ] && grep -q "frontAndBack" constant/polyMesh/boundary; } || \
+   { [ -f processor0/constant/polyMesh/boundary ] && grep -q "frontAndBack" processor0/constant/polyMesh/boundary; }; then
    dimension="2D"
 else dimension="3D"
 
