@@ -54,6 +54,12 @@ class multiComponentTransportMixture
         //- Species data
         PtrList<dimensionedScalar> DY_;
 
+        //- Flag saying whether species i has a tensorial DTensor field
+        boolList hasTensorDY_;
+
+        //- Species tensorial diffusion/dispersion tensor
+        //  DTensorY_[i] is only allocated if hasTensorDY_[i] == true
+        PtrList<volTensorField> DTensorY_;
 
     // Private member functions
 
@@ -85,6 +91,30 @@ public:
         dimensionedScalar DY(const label i) const
         {
             return DY_[i];
+        }
+
+        //- Return the species tensorial D list
+        const PtrList<volTensorField>& DTensorY() const
+        {
+            return DTensorY_;
+        }
+
+        //- Return the tensorial DTensor for species i
+        const volTensorField& DTensorY(const label i) const
+        {
+            return DTensorY_[i];
+        }
+
+        //- Return whether species i has a tensorial DTensor
+        bool hasTensorDY(const label i) const
+        {
+            return hasTensorDY_[i];
+        }
+
+        //- Return the full list of tensorial DTensor flags
+        const boolList& hasTensorDY() const
+        {
+            return hasTensorDY_;
         }
 
         //- Read dictionary

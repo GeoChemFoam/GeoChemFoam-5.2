@@ -43,20 +43,64 @@ Foam::multiComponentTransportMixture<MixtureType>::multiComponentTransportMixtur
         )
     ),
     MixtureType(*this, this->subDict("solutionSpecies").toc(), mesh),
-	DY_(this->subDict("solutionSpecies").toc().size())
+    DY_(this->subDict("solutionSpecies").toc().size()),
+    hasTensorDY_(this->subDict("solutionSpecies").toc().size()),
+    DTensorY_(this->subDict("solutionSpecies").toc().size())
 {
     wordList specieNames(this->subDict("solutionSpecies").toc());
-	Info << "Read species diffusion coefficients\n" << endl;
-	forAll(specieNames, i)
-	{
-	    const dictionary& solutionSpeciesDict = this->subDict("solutionSpecies");
-		const dictionary& subdict = solutionSpeciesDict.subDict(specieNames[i]);
-		DY_.set
-		(
-			i,
-			new dimensionedScalar("D",subdict)
-		);
-	}
+
+    forAll(specieNames, i)
+    {
+        const dictionary& solutionSpeciesDict = this->subDict("solutionSpecies");
+        const dictionary& subdict = solutionSpeciesDict.subDict(specieNames[i]);
+
+        DY_.set
+        (
+            i,
+            new dimensionedScalar("D", subdict)
+        );
+
+        const word DTensorName("D_" + specieNames[i]);
+
+        hasTensorDY_[i] = IOobject
+        (
+            DTensorName,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        ).typeHeaderOk<volTensorField>();
+
+        if (hasTensorDY_[i])
+        {
+            Info<< "Reading tensorial DTensor for species " << specieNames[i]
+                << " from " << mesh.time().timeName() << "/" << DTensorName
+                << nl << endl;
+
+            DTensorY_.set
+            (
+                i,
+                new volTensorField
+                (
+                    IOobject
+                    (
+                        DTensorName,
+                        mesh.time().timeName(),
+                        mesh,
+                        IOobject::MUST_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    mesh
+                )
+            );
+        }
+        else
+        {
+            Info<< "No tensorial DTensor found for species " << specieNames[i]
+                << " - using scalar DY only" << nl << endl;
+        }
+    }
+
 }
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 

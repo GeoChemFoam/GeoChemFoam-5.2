@@ -87,32 +87,42 @@ int main(int argc, char *argv[])
             phi = mesh.Sf() & fvc::interpolate(U);
         }
 
-        #include "epsEqn.H"
 
-        //permeability
-        Kinv = kf*pow(1-eps,2)/pow(eps,3);
+        bool epsChange = false;
+        if (kineticPhaseReactions.size()>0)
+        {
+            #include "epsEqn.H"
 
-        gradEps = fvc::grad(eps);
-        gradEpsf = fvc::interpolate(gradEps);
-        nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
-        nEpsf = nEpsv & mesh.Sf();
+            epsChange=true;
+
+            //permeability
+            Kinv = kf*pow(1-eps,2)/pow(eps,3);
+        
+
+            gradEps = fvc::grad(eps);
+            gradEpsf = fvc::interpolate(gradEps);
+            nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+            nEpsf = nEpsv & mesh.Sf();
+        }
 
         steadyStateControl steadyState(mesh);
-        while (steadyState.loop())
+
+        if (epsChange)
         {
-            // --- Pressure-velocity SIMPLE corrector
+            while (steadyState.loop())
             {
+                // --- Pressure-velocity SIMPLE corrector
                 #include "UEqn.H"
                 #include "pEqn.H"
-            }
 
-            laminarTransport.correct();
-            turbulence->correct();
+                laminarTransport.correct();
+                turbulence->correct();
 
-            // Concentration solver
-            if (steadyState.isSteadyStateConcentration())
-            {
-                #include "YiEqn.H"
+                // Concentration solver
+                if (steadyState.isSteadyStateConcentration())
+                {
+                    #include "YiEqn.H"
+                }
             }
         }
 

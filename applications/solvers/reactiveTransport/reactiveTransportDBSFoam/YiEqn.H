@@ -25,6 +25,7 @@
     {
 	volScalarField& Yi = speciesMixture.Y(i);
         dimensionedScalar DYi = speciesMixture.DY(i);
+        bool hasTensorDYi = speciesMixture.hasTensorDY(i);
         volScalarField Ri = 0*rhos/Mw*R;
 
         forAll(kineticPhaseReactions,j)
@@ -56,9 +57,18 @@
 	        fvm::ddt(eps,Yi)
                 + fvm::div(phi, Yi, "div(phi,Yi)")
                 + fvm::SuSp(-fvc::div(phi),Yi)
-                - fvm::laplacian(D, Yi)
                 + Ri
             );
+
+            if (hasTensorDYi)
+            {
+                const volTensorField& DTensorYi = speciesMixture.DTensorY(i);
+                YiEqn += - fvm::laplacian(eps*DTensorYi, Yi);
+            }
+            else
+            {
+                YiEqn += - fvm::laplacian(eps*DYi, Yi);
+            }
 
             YiEqn.relax();
             YiEqn.solve(mesh.solver("Yi"));
