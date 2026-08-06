@@ -17,6 +17,9 @@ sed -i "s/WriteTimestep/$WriteTimestep/g" system/controlDict
 sed -i "s/initTimestep/$initTimestep/g" system/controlDict
 sed -i "s/maxTimestep/$maxTimestep/g" system/controlDict
 sed -i "s/NCORR/100/g" system/fvSolution
+sed -i "s/nSmooth/0/g" system/fvSolution
+sed -i "s/cSmooth/0/g" system/fvSolution
+
 
 
 
