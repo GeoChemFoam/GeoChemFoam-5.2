@@ -149,6 +149,14 @@ if (ipz<NPZ-1):
    "        value           uniform 0;\n",
    "    }\n"
    ])
+
+data.extend([
+f"    solidwalls\n",
+"    {\n",
+"        type            zeroGradient;\n",
+"    }\n"
+])
+
 data.extend([
 "}\n",
 "\n",

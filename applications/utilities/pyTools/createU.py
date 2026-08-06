@@ -14,6 +14,7 @@ NPY=int(sys.argv[3])
 NPZ=int(sys.argv[4])
 
 boundary_type=sys.argv[5]
+
 boundary_value=float(sys.argv[6])
 
 NP=NPX*NPY*NPZ
@@ -23,6 +24,7 @@ remainder = rank % (NPX * NPY)
 ipy = remainder // NPX     # Get ipy
 ipx = remainder % NPX      # Get ipx
 
+                
 ###################################################################
 ###### U ##########################################################
 ###################################################################
@@ -148,6 +150,15 @@ if (ipz<NPZ-1):
    "        value           uniform (0 0 0);\n",
    "    }\n"
    ])
+
+data.extend([
+f"    solidwalls\n",
+"    {\n",
+"        type            fixedValue;\n",
+"        value           uniform (0 0 0);\n",
+"    }\n"
+])
+
 data.extend([
 "}\n",
 "\n",
