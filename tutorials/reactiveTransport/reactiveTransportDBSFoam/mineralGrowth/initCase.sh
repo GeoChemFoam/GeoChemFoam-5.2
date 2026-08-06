@@ -20,8 +20,10 @@ KSP=3.8019e-09
 scoeff=1
 rhos=2710
 Mws=100
-ca=0.001
-cb=0.0005
+ca0=0
+ca_in=0.001
+cb0=0
+cb_in=0.0005
 
 
 #Kozeny-Carman constant
@@ -58,8 +60,8 @@ NPX="$(tail -n 1 system/NPX)"
 NPY="$(tail -n 1 system/NPY)"
 NPZ="$(tail -n 1 system/NPZ)"
 
-if { [ -f 0/eps ] && grep -q "frontAndBack" 0/eps; } || \
-   { [ -f processor0/0/eps ] && grep -q "frontAndBack" processor0/0/eps; }; then
+if { [ -f constant/polyMesh/boundary ] && grep -q "frontAndBack" constant/polyMesh/boundary; } || \
+   { [ -f processor0/constant/polyMesh/boundary ] && grep -q "frontAndBack" processor0/constant/polyMesh/boundary; }; then
    dimension="2D"
 else dimension="3D"
 
@@ -75,19 +77,19 @@ then
 
         srun python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
         srun python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
-        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
+        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' 0 $ca_in
+        srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' 0 $cb_in
     else
         mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
         mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
-        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
+        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' 0 $ca_in
+        mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' 0 $cb_in
     fi
 else
     python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ $boundary_type $flowRate
     python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ $boundary_type $pressureDrop
-    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' $ca
-    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' $cb
+    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'A' 0 $ca_in
+    python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'B' 0 $cb_in
 fi
 
 echo "Case initialised"

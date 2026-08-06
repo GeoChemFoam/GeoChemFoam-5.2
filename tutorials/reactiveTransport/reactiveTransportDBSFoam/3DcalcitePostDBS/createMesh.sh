@@ -257,7 +257,7 @@ then
           fi
           srun python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
           srun python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' 0 $cinlet 
 
 	  echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 
@@ -279,7 +279,7 @@ then
       else
           mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
           mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' 0 $cinlet
 
           echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 
@@ -303,7 +303,7 @@ then
   else
       python $GCFOAM_DIR/applications/utilities/pyTools/createU.py $dimension $NPX $NPY $NPZ 'flow_rate' $flowRate
       python $GCFOAM_DIR/applications/utilities/pyTools/createP.py $dimension $NPX $NPY $NPZ 'flow_rate' 0
-      python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' $cinlet
+      python $GCFOAM_DIR/applications/utilities/pyTools/createC.py $dimension $NPX $NPY $NPZ 'C' 0 $cinlet
 
       echo "refine mesh at interface by running reactiveTransportDBSFoam for small time"
 

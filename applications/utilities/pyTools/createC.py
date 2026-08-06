@@ -14,8 +14,8 @@ NPY=int(sys.argv[3])
 NPZ=int(sys.argv[4])
 
 speciesName=sys.argv[5]
-cinlet=float(sys.argv[6])
-
+c0=float(sys.argv[6])
+cinlet=float(sys.argv[7])
 
 
 NP=NPX*NPY*NPZ
@@ -56,7 +56,7 @@ data = [
 "\n",
 "dimensions      [0 -3 0 0 1 0 0];\n",
 "\n",
-f"internalField   uniform 0;\n",
+f"internalField   uniform "+str(c0)+";\n",
 '\n'
 "boundaryField"'\n',
 "{"'\n',
@@ -142,6 +142,14 @@ if (ipz<NPZ-1):
    "        value           uniform 0;\n",
    "    }\n"
    ])
+
+data.extend([
+f"    solidwalls\n",
+"    {\n",
+"        type            zeroGradient;\n",
+"    }\n"
+])
+
 data.extend([
 "}\n",
 "\n",
