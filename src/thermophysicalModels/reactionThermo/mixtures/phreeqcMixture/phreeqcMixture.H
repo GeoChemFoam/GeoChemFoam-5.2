@@ -28,9 +28,11 @@ SourceFiles
 #ifndef phreeqcMixture_H
 #define phreeqcMixture_H
 
-#include "solutionSurfaceMultiComponentMixture.H"
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include "basicMultiComponentMixture.H"
+#include "phreeqcRMAdapter.H"
+#include "PtrList.H"
+#include "speciesTable.H"
+#include <vector>
 
 namespace Foam
 {
@@ -41,55 +43,116 @@ namespace Foam
 
 class phreeqcMixture
 :
-    public solutionSurfaceMultiComponentMixture
+    public basicMultiComponentMixture
 {
     // Private data
-	//initialise phreeqc module 
-	void initialise();
 
-	//OpenFOAM mesh
-	const fvMesh& mesh_;
+        //- OpenFOAM mesh
+        const fvMesh& mesh_;
 
-	//surface 
-	volScalarField Surf_;
+        //- Optional cell-based surface mixture state
+        bool surfaceEnabled_;
 
-    //ionic strength
-    volScalarField I_;
+        //surface species mixture
+        autoPtr<basicMultiComponentMixture> surfaceMixturePtr_;
+        speciesTable surfaceMasters_;
+        PtrList<volScalarField> surfaceMasterDensity_;
 
-    //surface potential
-    volScalarField psi_;
+        //whether porosity is read from the mesh object registry
+        bool hasPorosityField_;
+
+        //surface area - 0 if on present
+        std::vector<double> aSurf_;
+
+        //surface solution index
+        std::vector<int> surfaceSolutionIndex_;
+
+        //- Chemistry API adapter
+        autoPtr<phreeqcRMAdapter> phreeqcRM_;
+
+        //- Physical mobile-water porosity used by PHREEQC
+        std::vector<double> porosity_;
+
+        //- Minimum fixed eps for inclusion in the PHREEQCRM mapping
+        scalar epsChemistryMin_;
+
+        //- OpenFOAM-cell to PHREEQCRM chemistry-cell mapping
+        std::vector<int> gridToChemistry_;
+
+        //- Number of cells included in the fixed PHREEQCRM mapping
+        label chemistryCellCount_;
+
+        //- Solution species concentrations, ordered by PHREEQC component index
+        std::vector<double> concentration_;
+
+        //- Index mapping from OpenFOAM solution species to PHREEQC component
+        std::vector<int> componentSolutionIndex_;
 
 	//index of phreeqc module
 	int id_;
 
+        //number of surfaces in phreeqc
+        int nSurf_;
+
+        //- Cached component count from active backend
+        int nSolutionSpecies_;
+        int nSurfaceSpecies_;
+
+        //- Surface-species concentrations, ordered by PHREEQC surface index
+        std::vector<double> surfConcentration_;
+
+        //- Surface-species area per liter water for the PHREEQC backend
+        std::vector<double> surfArea_;
+
+        //- Index mapping from OpenFOAM surface species to PHREEQC component
+        std::vector<int> componentSurfaceIndex_;
+
 	//water saturation
-	double* saturation_;
+	std::vector<double> saturation_;
 
-	//index mapping from solution species to phreeqc component
-	int* componentSolutionIndex_;
-	//index mapping from surface species to phreeqc component
-	int* componentSurfaceIndex_;
-	//concentration
-	double* concentration_;
-	//surface concentration
-	double* surfConcentration_;
-	//surface area
-	double* surfArea_;
-	//surface potential
-	double* surfPotential_;
+    // Private Member Functions
 
-	//selected output
-	double* selectedOutput_;
+        //- Fail fast on PHREEQC backend errors instead of continuing into UB
+        void checkPhreeqcStatus(const char* operation, int status) const;
 
+        //- Configure optional cell-based surface support from thermoDict
+        void configureSurfaceMode(const dictionary& thermoDict);
 
-    // Private member functions
+        //- Populate the porosity cache from field if present
+        void initialisePorosityFromField();
+
+        //- print Phreeqc concentration
+        void printConcentration();
+
+        //- Copy the current OpenFOAM solution fields into the PHREEQC buffer
+        void syncConcentrationFromFields();
+
+        //- print Phreeqc surface concentration
+        void printSurfaceConcentration();
+
+        //- Copy the current OpenFOAM surface fields into the PHREEQC buffer
+        void syncSurfaceStateFromFields();
+
+        //- Push the PHREEQC surface state back into OpenFOAM surface fields
+        void syncSurfaceStateToFields();
+
+        //- Initialise the PHREEQC module for aqueous-only DBS chemistry
+        void initialise();
+
+        //- Push a backend-safe porosity vector into PHREEQC
+        void syncPorosityToModule();
+
+        //- Return true when a cell belongs to the fixed chemistry mapping
+        bool chemistryCellActive(const label celli) const;
+
+        //- Populate the current cellwise surface area scale from aSurf
+        void syncSurfaceAreaFromFields();
 
         //- Construct as copy (not implemented)
         phreeqcMixture(const phreeqcMixture&);
 
 
 public:
-
 
     // Constructors
 
@@ -113,29 +176,17 @@ public:
     // Destructor
     virtual ~phreeqcMixture();
 
-    // Member functions
+    // Member Functions
 
-	//solve reaction step function
-	void correct();
+        //- Solve reaction step
+        void correct();
 
     void setSaturation(const volScalarField& alpha);
 
-        //- Read dictionary
-        //void read(const dictionary&);
+
 };
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-//#ifdef NoRepository
-//#   include "phreeqcMixture.C"
-//#endif
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif
 

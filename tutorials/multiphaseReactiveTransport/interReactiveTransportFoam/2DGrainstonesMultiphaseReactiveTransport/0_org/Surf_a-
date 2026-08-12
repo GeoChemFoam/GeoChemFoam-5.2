@@ -22,13 +22,13 @@ boundaryField
 {
 	walls
     {
-        type           fixedValue;
+        type           reactingWall;
 		value uniform SurfDen;
     }
 
 	solidwalls
     {
-        type           fixedValue;
+        type           reactingWall;
 		value uniform SurfDen;
     }
 

@@ -31,33 +31,9 @@ Foam::multiComponentTransportMixture<MixtureType>::multiComponentTransportMixtur
     const fvMesh& mesh
 )
 :
-    IOdictionary
-    (
-        IOobject
-        (
-            "thermoPhysicalProperties",
-            mesh.time().constant(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    ),
-    MixtureType(*this, this->subDict("solutionSpecies").toc(), mesh),
-	DY_(this->subDict("solutionSpecies").toc().size())
-{
-    wordList specieNames(this->subDict("solutionSpecies").toc());
-	Info << "Read species diffusion coefficients\n" << endl;
-	forAll(specieNames, i)
-	{
-	    const dictionary& solutionSpeciesDict = this->subDict("solutionSpecies");
-		const dictionary& subdict = solutionSpeciesDict.subDict(specieNames[i]);
-		DY_.set
-		(
-			i,
-			new dimensionedScalar("D",subdict)
-		);
-	}
-}
+    basicMultiComponentTransportMixture(mesh),
+    MixtureType(*this, this->subDict("solutionSpecies").toc(), mesh)
+{}
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 // ************************************************************************* //
@@ -66,6 +42,4 @@ namespace Foam
     template class Foam::multiComponentTransportMixture<Foam::basicMultiComponentMixture>;
     template class Foam::multiComponentTransportMixture<Foam::solutionSurfaceMultiComponentMixture>;
     template class Foam::multiComponentTransportMixture<Foam::phreeqcMixture>;
-    template class Foam::multiComponentTransportMixture<Foam::reactiveMixture>;
 }
-

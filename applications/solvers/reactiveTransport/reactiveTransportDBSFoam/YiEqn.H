@@ -2,36 +2,27 @@
     R = 0*R;
     forAll(kineticPhaseReactions,j)
     {
+        dimensionedScalar Mws = speciesMixture.Mws(j);
+        dimensionedScalar rhos = speciesMixture.rhos(j);
         volScalarField Rj = speciesMixture.Rate(j);
-
+        volScalarField wsj = 1-eps;
         forAll(kineticPhases,k)
         {
             if (kineticPhaseReactions[j]==kineticPhases[k])
             {
+                volScalarField ws    = speciesMixture.Ws(k);
                 volScalarField omega = speciesMixture.omega(k);
                 Rj *= (1-omega);
+                wsj*=ws;
             }
         }
 
-        if (VoS=="VoS-psi")
-        {
-            R  += Mw/rhos*Rj*a;
-        }
-        else if (VoS=="iVoS")
-        {
-            surfaceScalarField phiR = Mw/rhos*fvc::interpolate(Rj)*nEpsf;
+        surfaceScalarField wsjf = fvc::interpolate(wsj)/(fvc::interpolate(1-eps+1e-15));
+        surfaceScalarField phiR = Mws/rhos*fvc::interpolate(Rj)*wsjf*nEpsf;
 
-            surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
+        surfaceScalarField phiREps = fvc::flux(phiR,eps,"div(phiR,eps)");
 
-            R+=eps*fvc::div(phiR)-fvc::div(phiREps);
-        }
-        else
-        {
-             Info << "VoS-scheme " << VoS << " does not exist" << endl;
-             Info<< "VoS-scheme should be equal to VoS-psi or iVoS"
-             << endl
-             << abort(FatalError);
-        } 
+        R+=eps*fvc::div(phiR)-fvc::div(phiREps);
     }
 
 
@@ -39,7 +30,8 @@
     {
 	volScalarField& Yi = speciesMixture.Y(i);
         dimensionedScalar DYi = speciesMixture.DY(i);
-        volScalarField Ri = 0*rhos/Mw*R;
+        bool hasTensorDYi = speciesMixture.hasTensorDY(i);
+        Ri = 0*Ri;
 
         forAll(kineticPhaseReactions,j)
         {
@@ -55,40 +47,37 @@
                 }
             }
 
-            if (VoS=="VoS-psi")
-            {
-                Ri += scoeffj[i]*a*Rj; 
-            }
-            else if (VoS=="iVoS")
-            {
-                surfaceScalarField phiR = -scoeffj[i]*fvc::interpolate(Rj)*nEpsf;
+            surfaceScalarField phiR = -scoeffj[i]*fvc::interpolate(Rj)*nEpsf;
 
-                surfaceScalarField phiREps = scoeffj[i]*fvc::interpolate(Rj)*fvc::flux(-nEpsf,eps,"div(nEpsf,eps)");
-                Ri += fvc::div(phiREps)-eps*fvc::div(phiR);
-            }
-            else
-            {
-                Info<< "VoS-scheme should be equal to VoS-psi or iVoS"
-                << endl
-                << abort(FatalError);
-            }
+            surfaceScalarField phiREps = scoeffj[i]*fvc::interpolate(Rj)*fvc::flux(-nEpsf,eps,"div(nEpsf,eps)");
+            Ri += fvc::div(phiREps)-eps*fvc::div(phiR);
         }
 
         volScalarField D = eps*DYi;
                 
-        while (steadyState.correctNonOrthogonal())
+        while (simple.correctNonOrthogonal())
         {
             fvScalarMatrix YiEqn
             (
-                fvm::div(phi, Yi, "div(phi,Yi)")
+	        fvm::ddt(eps,Yi)
+                + fvm::div(phi, Yi, "div(phi,Yi)")
                 + fvm::SuSp(-fvc::div(phi),Yi)
-                - fvm::laplacian(D, Yi)
                 + Ri
             );
 
+            if (hasTensorDYi)
+            {
+                const volTensorField& DTensorYi = speciesMixture.DTensorY(i);
+                YiEqn += - fvm::laplacian(eps*DTensorYi, Yi);
+            }
+            else
+            {
+                YiEqn += - fvm::laplacian(eps*DYi, Yi);
+            }
+
             YiEqn.relax();
             YiEqn.solve(mesh.solver("Yi"));
-            Yi = max(Yi,0*Yi);
+            //Yi = max(Yi,0*Yi);
         }
 
 	Info<< solutionSpecies[i] << " concentration = "

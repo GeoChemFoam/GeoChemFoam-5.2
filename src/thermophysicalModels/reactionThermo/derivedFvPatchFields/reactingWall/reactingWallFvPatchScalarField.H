@@ -45,10 +45,7 @@ class reactingWallFvPatchScalarField
     public fixedValueFvPatchScalarField
 {
 
-	wordList surfaceMasters_;
-	scalarList density_;
-
-	void initialize();
+    void initialize();
 
 public:
 
@@ -119,18 +116,6 @@ public:
 
 
     // Member functions
-
-		//get surface master list
-		const wordList& get_surface_masters() const
-		{
-			return surfaceMasters_;
-		}
-
-		//get surface master list
-		const scalarList& get_density() const
-		{
-			return density_;
-		}
 
         //- Write
         virtual void write(Ostream&) const;

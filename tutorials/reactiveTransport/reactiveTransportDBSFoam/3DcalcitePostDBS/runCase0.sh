@@ -12,6 +12,8 @@ sed -i "s/WriteTimestep/1e-06/g" system/controlDict
 sed -i "s/initTimestep/1e-06/g" system/controlDict
 sed -i "s/maxTimestep/1e-06/g" system/controlDict
 sed -i "s/NCORR/5000/g" system/fvSolution
+sed -i "s/nSmooth/0/g" system/fvSolution
+sed -i "s/cSmooth/0/g" system/fvSolution
 
 if [ -d "processor0" ]
 then

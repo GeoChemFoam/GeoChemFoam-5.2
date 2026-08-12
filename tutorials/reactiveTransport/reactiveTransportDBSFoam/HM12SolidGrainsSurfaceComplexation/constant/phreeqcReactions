@@ -1,0 +1,31 @@
+TITLE Example 19.--Linear
+
+SURFACE_MASTER_SPECIES
+	Surf_s Surf_sOH
+
+SURFACE_SPECIES
+	Surf_sOH = Surf_sOH
+	Surf_sOH = Surf_sO- + H+
+		-log_k -6.2
+		-mole_balance Surf_sO-
+	Surf_sOH + Ni+2 = Surf_sONi+ + H+
+		-log_k 0.648
+		-mole_balance Surf_sONi+
+        Surf_sOH + Ni+2 + H2O = Surf_sONiOH + 2H+
+                -log_k -7.91
+                -mole_balance Surf_sONiOH
+
+
+SOLUTION 0 formation water
+     units   mol/L
+     Ni      1e-13 
+     Cl      1e-13 
+     pH      7
+
+SELECTED_OUTPUT
+
+END
+
+
+
+

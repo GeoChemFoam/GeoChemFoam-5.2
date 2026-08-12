@@ -3,7 +3,7 @@
 ###### USERS INPUT ############################################################
 
 ## Define the total number of iterations of the simulation and how often to output
-TotalTime=1.5e-3
+TotalTime=3e-3
 WriteTimestep=1e-4
 runTimestep=5e-7
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 cd ${0%/*} || exit 1    # run from this directory
 
-wmake reactiveTransportFoam
-wmake reactiveTransportALEFoam
-wmake reactiveTransportDBSFoam
+wmake -j reactiveTransportFoam
+wmake -j reactiveTransportALEFoam
+wmake -j reactiveTransportDBSFoam
 # ----------------------------------------------------------------- end-of-file

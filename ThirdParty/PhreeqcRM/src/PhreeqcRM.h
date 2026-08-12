@@ -57,8 +57,11 @@ enum {
 	METHOD_GETPRESSURE,
 	METHOD_GETSATURATION,
 	METHOD_GETSELECTEDOUTPUT,
+	METHOD_GETSOLUTIONIONICSTRENTGH,
 	METHOD_GETSOLUTIONVOLUME,
 	METHOD_GETSPECIESCONCENTRATIONS,
+	METHOD_GETSURFACEAREA,
+	METHOD_GETSURFACESPECIESCONCENTRATION,
 	METHOD_GETTEMPERATURE,
 	METHOD_INITIALPHREEQC2MODULE,
 	METHOD_INITIALPHREEQCCELL2MODULE,
@@ -4033,6 +4036,7 @@ protected:
 	std::vector <double> species_d_25;
 	std::vector <cxxNameDouble> species_stoichiometry;
 	std::vector <cxxNameDouble> surf_species_stoichiometry;
+	std::vector <double> surf_species_z;
 	std::map<int, int> s_num2rm_species_num;
 	std::vector<double> standard_task_vector;   // root only
 	std::vector <std::string> phases_names;

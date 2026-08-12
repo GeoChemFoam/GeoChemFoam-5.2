@@ -1,0 +1,60 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermoPhysicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+mixtureType phreeqcMixture;
+epsChemistryMin 1e-3;
+kineticPhases
+{
+}
+kineticPhaseReactions
+{
+}
+solutionSpecies
+{
+    Ni+2
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    NiOH+
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    NiO2H2
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    Cl-
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    H+
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    OH-
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+};
+
+surfaceSpecies
+{
+    Surf_sO-;
+    Surf_sONi+;
+    Surf_sOH;
+    Surf_sONiOH;
+};
+
+surfaceMasters
+{
+    Surf_sO;
+};
+
+// ************************************************************************* //

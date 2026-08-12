@@ -48,16 +48,8 @@ reactingWallFvPatchScalarField
     const dictionary& dict
 )
 :
-    fixedValueFvPatchScalarField(p, iF, dict),
-	surfaceMasters_(dict.subDict("surfaceMasters").toc()),
-	density_(surfaceMasters_.size())
+    fixedValueFvPatchScalarField(p, iF, dict)
 {	
-	forAll(surfaceMasters_, i)
-	{
-		const dictionary& surfaceMastersDict = dict.subDict("surfaceMasters");
-		const dictionary& subdict = surfaceMastersDict.subDict(surfaceMasters_[i]);
-		density_[i] = readScalar(subdict.lookup("density"));
-	}
 }
 
 
@@ -70,9 +62,7 @@ reactingWallFvPatchScalarField
     const fvPatchFieldMapper& mapper
 )
 :
-    fixedValueFvPatchScalarField(ptf, p, iF, mapper),
-	surfaceMasters_(ptf.surfaceMasters_),
-	density_(ptf.density_)
+    fixedValueFvPatchScalarField(ptf, p, iF, mapper)
 {
 }
 
@@ -83,9 +73,7 @@ reactingWallFvPatchScalarField
     const reactingWallFvPatchScalarField& ptf
 )
 :
-    fixedValueFvPatchScalarField(ptf),
-	surfaceMasters_(ptf.surfaceMasters_),
-	density_(ptf.density_)
+    fixedValueFvPatchScalarField(ptf)
 {}
 
 
@@ -96,9 +84,7 @@ reactingWallFvPatchScalarField
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    fixedValueFvPatchScalarField(ptf, iF),
-	surfaceMasters_(ptf.surfaceMasters_),
-	density_(ptf.density_)
+    fixedValueFvPatchScalarField(ptf, iF)
 {}
 
 
@@ -106,16 +92,8 @@ reactingWallFvPatchScalarField
 
 void reactingWallFvPatchScalarField::write(Ostream& os) const
 {
-	dictionary dict;
+    dictionary dict;
 
-	forAll(surfaceMasters_, i)
-	{
-		dictionary subdict;
-		subdict.add("density",density_[i]);
-		dict.add(surfaceMasters_[i],subdict);
-	}
-
-	os.writeKeyword("surfaceMasters") << dict << endl;
     fixedValueFvPatchScalarField::write(os);
 }
 

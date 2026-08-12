@@ -30,6 +30,7 @@ Hplus=1.051e-7
 OHminus=1.069e-7
 
 #Surface site density (kmol/m2)
+Surf_den=2.4e-9
 Surf_aminus=2.0167e-10
 Surf_aCaplus=1.7843e-10
 Surf_aH=2.0199e-9
@@ -54,6 +55,7 @@ sed -i "s/cinlet/$Clminus/g" 0/Cl-
 sed -i "s/cinlet/$Hplus/g" 0/H+
 sed -i "s/cinlet/$OHminus/g" 0/OH-
 
+sed -i "s/SurfDen/$Surf_den/g" 0/Surf_a
 sed -i "s/SurfDen/$Surf_aminus/g" 0/Surf_a-
 sed -i "s/SurfDen/$Surf_aCaplus/g" 0/Surf_aCa+
 sed -i "s/SurfDen/$Surf_aH/g" 0/Surf_aH

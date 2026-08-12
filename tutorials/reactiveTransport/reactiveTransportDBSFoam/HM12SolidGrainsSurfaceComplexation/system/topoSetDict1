@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+
+actions
+(
+    {
+        name    epsCells;        // Name of the cellSet to create
+        type    cellSet;
+        action  new;             // "new" makes a fresh set, "add" or "delete" can modify
+        source  fieldToCell;     // Select cells by scalar field values
+
+        sourceInfo
+        {
+            field   eps;         // Your volScalarField name
+            min     0.5;         // Lower bound
+            max     1.0;        // Upper bound (large number to catch all above 0.5)
+        }
+    }
+);
+

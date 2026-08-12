@@ -3,7 +3,7 @@ cd ${0%/*} || exit 1    # run from this directory
 makeType=${1:-libso}
 set -x
 
-wmake interFoam
-wmake interOSFoam
-wmake diffInterFoam
+wmake -j interFoam
+wmake -j interOSFoam
+wmake -j diffInterFoam
 # ----------------------------------------------------------------- end-of-file

@@ -1,7 +1,7 @@
 #!/bin/sh
 cd ${0%/*} || exit 1    # run from this directory
 
-wmake scalarTransportDBSFoam
-wmake dispersionFoam
-wmake laplacianFoam
+wmake -j scalarTransportDBSFoam
+wmake -j dispersionFoam
+wmake -j laplacianFoam
 # ----------------------------------------------------------------- end-of-file

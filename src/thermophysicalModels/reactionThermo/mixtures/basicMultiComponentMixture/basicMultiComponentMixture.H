@@ -105,6 +105,10 @@ public:
 
         //- Return the const mass-fraction field for a specie given by name
         inline const volScalarField& Y(const word& specieName) const;
+
+        //- Correct mixture state
+        virtual void correct()
+        {}
 };
 
 

@@ -26,11 +26,11 @@ Description
 #include "singlePhaseTransportModel.H"
 #include "turbulentTransportModel.H"
 #include "simpleControl.H"
-#include "reactiveMixture.H"
-#include "multiComponentTransportMixture.H"
+#include "basicReactiveTransportMixture.H"
 #include "steadyStateControl.H"
 #include "dynamicFvMesh.H"
 #include "fvOptions.H"
+#include "upwind.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         #include "readDyMControls.H"
         #include "CourantNo.H"
         #include "deltaEpsMax.H"
-        
+
         #include "setDeltaT.H"
 
         ++runTime;
@@ -87,50 +87,52 @@ int main(int argc, char *argv[])
             phi = mesh.Sf() & fvc::interpolate(U);
         }
 
-        #include "epsEqn.H"
 
-        //permeability
-        Kinv = kf*pow(1-eps,2)/pow(eps,3);
-
-        volVectorField gradEps = fvc::grad(eps);
-        surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
-        surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
-        nEpsf = nEpsv & mesh.Sf();
-
-        volScalarField a = mag(fvc::grad(eps));
-
-        scalar lambda = psiCoeff;
-
-        if (VoS=="VoS-psi")
+        bool epsChange = false;
+        if (kineticPhaseReactions.size()>0)
         {
-            scalar As = a.weightedAverage(mesh.V()).value();
+            #include "epsEqn.H"
 
-            a = a*(1-eps)*(1e-3+eps);
+            epsChange=true;
 
-            if (adaptPsiCoeff) lambda = As/a.weightedAverage(mesh.V()).value();
+            //permeability
+            Kinv = kf*pow(1-eps,2)/pow(eps,3);
+        
 
-            a = lambda*a;
+            gradEps = fvc::grad(eps);
+            gradEpsf = fvc::interpolate(gradEps);
+            nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+            nEpsf = nEpsv & mesh.Sf();
 
+            eps_f = upwind<scalar>(mesh, -nEpsf).interpolate(eps);
+ 
+            aSurf = aI - fvc::div(eps_f*nEpsf)+eps*fvc::div(nEpsf);
+        }
 
-            Info << "psiCoeff=" << lambda << endl;
-       }
-    	
         steadyStateControl steadyState(mesh);
-        while (steadyState.loop())
+
+        if (epsChange)
         {
-            // --- Pressure-velocity SIMPLE corrector
+            while (steadyState.loop())
             {
+                // --- Pressure-velocity SIMPLE corrector
                 #include "UEqn.H"
                 #include "pEqn.H"
-            }
 
-            laminarTransport.correct();
-            turbulence->correct();
+                laminarTransport.correct();
+                turbulence->correct();
 
-            // Concentration solver
-            {
-                #include "YiEqn.H"
+                // Concentration solver
+                if (steadyState.isSteadyStateConcentration())
+                {
+                    #include "YiEqn.H"
+                }
             }
+        }
+
+        if (!steadyState.isSteadyStateConcentration())
+        {
+            #include "YiEqn.H"
         }
 
         runTime.write();

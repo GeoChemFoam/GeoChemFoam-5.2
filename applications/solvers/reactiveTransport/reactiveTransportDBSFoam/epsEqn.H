@@ -13,5 +13,9 @@
         << "  Max(eps) = " << gMax(eps)
         << endl;
 
-
+   epsSmooth=eps;
+   for(int i=0;i<nS;i++)
+   {
+        epsSmooth = cS*fvc::average(fvc::interpolate(epsSmooth))+(1-cS)*epsSmooth;
+   }
 }

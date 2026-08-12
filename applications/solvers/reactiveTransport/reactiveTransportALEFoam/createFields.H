@@ -43,7 +43,7 @@ IOdictionary transportProperties
 #include "createPhi.H"
 
 Info << "Create species mixture\n" << endl;
-multiComponentTransportMixture<reactiveMixture> speciesMixture(mesh);
+reactiveTransportMixture<inertMultiComponentMixture> speciesMixture(mesh);
 
 label pRefCell = 0;
 scalar pRefValue = 0.0;

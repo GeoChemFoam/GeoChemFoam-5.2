@@ -54,8 +54,8 @@ NPX="$(tail -n 1 system/NPX)"
 NPY="$(tail -n 1 system/NPY)"
 NPZ="$(tail -n 1 system/NPZ)"
 
-if { [ -f 0/eps ] && grep -q "frontAndBack" 0/eps; } || \
-   { [ -f processor0/0/eps ] && grep -q "frontAndBack" processor0/0/eps; }; then
+if { [ -f constant/polyMesh/boundary ] && grep -q "frontAndBack" constant/polyMesh/boundary; } || \
+   { [ -f processor0/constant/polyMesh/boundary ] && grep -q "frontAndBack" processor0/constant/polyMesh/boundary; }; then
    dimension="2D"
 else dimension="3D"
 
@@ -71,10 +71,10 @@ then
 
 	if [[ "$model" == "PecletDependent" ]];then
           echo "Calculate micro dispersivity"
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ "D"
 	elif [[ "$model" == "tortuosity" ]];then
           echo "Calculate micro effective diffusion coefficient"
-          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+          srun python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
         fi
 
    else
@@ -82,10 +82,10 @@ then
 
         if [[ "$model" == "PecletDependent" ]];then
           echo "Calculate micro dispersivity"
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ 
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ "D"
 	elif [[ "$model" == "tortuosity" ]];then
           echo "Calculate micro effective diffusion coefficient"
-          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+          mpirun -np $NP python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
         fi
    fi
 else
@@ -93,10 +93,10 @@ else
 
     if [[ "$model" == "PecletDependent" ]];then
       echo "Calculate micro dispersivity"
-      python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ
+      python $GCFOAM_DIR/applications/utilities/pyTools/createDeffPeDependentCyclic.py $dimension $Diff $micro_por $tau $Lpore $betax $alpha1x $alpha2x  $betay $alpha1y $alpha2y $betaz $alpha1z $alpha2z $NPX $NPY $NPZ "D"
     elif [[ "$model" == "tortuosity" ]];then
       echo "Calculate micro effective diffusion coefficient"
-      python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ
+      python $GCFOAM_DIR/applications/utilities/pyTools/createDefftortCyclic.py $dimension $Diff $micro_por $tau $NPX $NPY $NPZ "D"
     fi
 fi
 

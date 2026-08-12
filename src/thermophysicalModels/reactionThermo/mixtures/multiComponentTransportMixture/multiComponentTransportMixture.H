@@ -28,11 +28,10 @@ SourceFiles
 #ifndef multiComponentTransportMixture_H
 #define multiComponentTransportMixture_H
 
-#include "IOdictionary.H"
+#include "basicMultiComponentTransportMixture.H"
 #include "basicMultiComponentMixture.H"
 #include "solutionSurfaceMultiComponentMixture.H"
 #include "phreeqcMixture.H"
-#include "reactiveMixture.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,15 +45,9 @@ namespace Foam
 template <class MixtureType>
 class multiComponentTransportMixture
 :
-    public IOdictionary,
+    public basicMultiComponentTransportMixture,
     public MixtureType
 {
-    // Private data
-
-        //- Species data
-        PtrList<dimensionedScalar> DY_;
-
-
     // Private member functions
 
         //- Construct as copy (not implemented)
@@ -75,20 +68,41 @@ public:
 
     // Member functions
 
-        //- Return the species molecular diffusion list
-        const PtrList<dimensionedScalar>& DY() const
+        //- Return the table of species
+        const speciesTable& species() const
         {
-            return DY_;
+            return MixtureType::species();
         }
 
-        //- Return the species molecular diffusion
-        dimensionedScalar DY(const label i) const
+        //- Return the mass-fraction fields
+        PtrList<volScalarField>& Y()
         {
-            return DY_[i];
+            return MixtureType::Y();
         }
 
-        //- Read dictionary
-        //void read(const dictionary&);
+        //- Return the const mass-fraction fields
+        const PtrList<volScalarField>& Y() const
+        {
+            return MixtureType::Y();
+        }
+
+        //- Return the mass-fraction field for a specie given by index
+        volScalarField& Y(const label i)
+        {
+            return MixtureType::Y(i);
+        }
+
+        //- Return the const mass-fraction field for a specie given by index
+        const volScalarField& Y(const label i) const
+        {
+            return MixtureType::Y(i);
+        }
+
+        //- Update properties
+        void correct()
+        {
+            MixtureType::correct();
+        }
 };
 
 

@@ -52,11 +52,4 @@ libs (
 "libmeshToolsGCFOAM.so"
 );
 
-
-
-OptimisationSwitches
-{
-    commsType       blocking;
-}
-
 // ************************************************************************* //

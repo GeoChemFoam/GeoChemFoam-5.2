@@ -1,0 +1,25 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createPatchDict;
+}
+
+pointSync false;
+
+patches
+(
+    {
+        name solidwalls;                 // the new patch name you want
+
+        constructFrom patches;
+        patches ( oldInternalFaces );  // the old patch name
+
+        patchInfo
+        {
+            type patch;
+            // you may want to declare group membership etc
+        }
+    }
+);

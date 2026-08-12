@@ -3,12 +3,14 @@ wmake libso reactionThermo
 wmake libso fvMotionSolver
 wmake libso finiteVolume
 wmake libso meshTools
+wmake libso OpenFOAM
 wmake libso interfaceProperties
 wmake libso twoPhaseProperties
 wmake libso immiscibleIncompressibleTwoPhaseMixture
 wmake libso twoPhasePhaseFieldMixture
 wmake libso incompressible
 wmake libso immiscibleIncompressibleTwoPhasePhaseFieldMixture
+wmake libso traction
 wmake scalarTransportDBSFoam
 wmake dispersionFoam
 wmake laplacianFoam
@@ -25,6 +27,7 @@ wmake interReactiveTransportFoam
 wmake interReactiveTransferFoam
 wmake simpleDBSFoam
 wmake heatTransportFoam
+wmake solidDisplacementElasticVOSFoam
 wmake processPoroPerm
 wmake processPoroSurf
 wmake processConcentration
@@ -40,6 +43,7 @@ wmake processRelPermPF
 wmake processSpeciesTransfer
 wmake processFF
 wmake processDispersion
+wmake processStressStrain
 wmake erodeFoam
 wmake smoothSolidSurface
 wmake mapFields

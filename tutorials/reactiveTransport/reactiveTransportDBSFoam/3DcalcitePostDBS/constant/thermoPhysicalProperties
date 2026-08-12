@@ -15,6 +15,8 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+mixtureType inertMultiComponentMixture;
+
 solutionSpecies
 {
    C 
@@ -33,6 +35,8 @@ kineticPhaseReactions
 {
   calcite
   {
+      Mws Mws [ 1 0 0 0 -1 0 0 ] 100;
+      rhos   rhos [ 1 -3 0 0 0 0 0 ] 2710;
       species
       {
           C

@@ -9,58 +9,16 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      Surf;
+    class       dictionary;
+    location    "constant";
+    object      transportProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 -2 0 0 1 0 0];
+transportModel  Newtonian;
 
-internalField   uniform 0;
+nu              nu [0 2 -1 0 0 0 0] Visc;
 
-boundaryField
-{
-	walls
-    {
-        type          reactingWall;
-        surfaceMasters
-        {
-            Surf_a
-            {
-	        density 2.4e-9;
-            };
-        };
-        value uniform 2.4e-9;
-    }
-
-		solidwalls
-    {
-        type          reactingWall;
-        surfaceMasters
-        {
-            Surf_a
-            {
-	        density 2.4e-9;
-            };
-        };
-        value uniform 2.4e-9;
-    }
-
-	inlet
-    {
-	type            zeroGradient;
-    }
-	
-	outlet
-    {
-        type            zeroGradient;
-    }
-
-    frontAndBack
-    {
-        type empty;
-
-    }
-}
+kf kf [0 -2 0 0 0 0 0] k_f;
 
 // ************************************************************************* //

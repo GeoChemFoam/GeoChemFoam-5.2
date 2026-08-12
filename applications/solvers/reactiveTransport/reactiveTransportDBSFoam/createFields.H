@@ -33,25 +33,73 @@ volScalarField eps
         "eps",
         runTime.timeName(),
         mesh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    mesh
+    mesh,
+    dimensionedScalar("eps",dimless,1)
 );
 
-surfaceScalarField nEpsf
+volScalarField epsSmooth
 (
-   IOobject
-   (
-      "nEpsf",
-      runTime.timeName(),
-      mesh,
-      IOobject::NO_READ,
-      IOobject::NO_WRITE
-   ),
-   mesh,
-   dimensionedScalar("nEpsf",dimArea, 0.0)
+    IOobject
+    (
+        "epsSmooth",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    eps
 );
+
+scalar cS = simple.dict().lookupOrDefault<scalar>("cS", 0.0);
+label  nS = simple.dict().lookupOrDefault<label>("nS", 0);
+
+for(int i=0;i<nS;i++)
+{
+     epsSmooth = cS*fvc::average(fvc::interpolate(epsSmooth))+(1-cS)*epsSmooth;
+}
+
+
+//intrinsic surface area (m^2/m^3)
+volScalarField aI
+(
+    IOobject
+    (
+        "aI",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("aI",dimArea/dimVolume,0.0)
+);
+
+volScalarField aSurf
+(
+    IOobject
+    (
+        "aSurf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    aI
+);
+
+dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
+
+volVectorField gradEps = fvc::grad(eps);
+surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
+surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+surfaceScalarField  nEpsf = nEpsv & mesh.Sf();
+
+surfaceScalarField eps_f = upwind<scalar>(mesh, -nEpsf).interpolate(eps);
+
+aSurf = aI - fvc::div(eps_f*nEpsf)+eps*fvc::div(nEpsf);
 
 Info<< "Reading transportProperties\n" << endl;
 
@@ -70,7 +118,13 @@ IOdictionary transportProperties
 #include "createPhi.H"
 
 Info << "Create species mixture\n" << endl;
-multiComponentTransportMixture<reactiveMixture> speciesMixture(mesh);
+autoPtr<basicReactiveTransportMixture> pSpeciesMixture
+(
+    basicReactiveTransportMixture::New(mesh)
+);
+
+basicReactiveTransportMixture& speciesMixture = pSpeciesMixture();
+speciesMixture.correct();
 
 label pRefCell = 0;
 scalar pRefValue = 0.0;
@@ -88,14 +142,22 @@ autoPtr<incompressible::turbulenceModel> turbulence
     incompressible::turbulenceModel::New(U, phi, laminarTransport)
 );
 
-dimensionedScalar kf("kf",transportProperties);
+dimensionedScalar kf(dimensionedScalar::getOrDefault("kf",transportProperties,dimless/sqr(dimLength),Zero));
 
-dimensionedScalar Mw("Mw",transportProperties);
 
-dimensionedScalar rhos("rhos", transportProperties);
+volScalarField Kinv
+(
+    IOobject
+    (
+        "Kinv",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    kf*pow(1-eps,2)/pow(eps,3)
+);
 
-//permeability
-volScalarField Kinv = kf*pow(1-eps,2)/pow(eps,3);
 
 Info << "Reading reaction rate if present\n" << endl;
 volScalarField R
@@ -112,7 +174,24 @@ volScalarField R
     dimensionedScalar("R",dimless/dimTime, 0.0)
 );
 
-dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
+volScalarField Ri
+(
+    IOobject
+    (
+        "Ri",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar
+    (
+        "zero",
+        dimMoles/dimVolume/dimTime,
+        0.0
+    )
+);
 
 #include "createMRF.H"
 #include "createFvOptions.H"
