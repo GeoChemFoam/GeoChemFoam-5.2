@@ -66,8 +66,8 @@ SIMPLE
     pRefCell 0;
     pRefValue 0;
 
-    nS 0;
-    cS 0;
+    nS nSmooth;
+    cS cSmooth;
 
     nNonOrthogonalCorrectors 0;
 

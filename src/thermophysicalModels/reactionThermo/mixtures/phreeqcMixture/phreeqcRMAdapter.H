@@ -39,6 +39,12 @@ public:
 
     int destroy();
 
+    //- Apply the OpenFOAM-cell to chemistry-cell mapping
+    int createMapping(int* gridToChemistry);
+
+    //- Return the number of active chemistry cells
+    int getChemistryCellCount();
+
     int setPorosity(double* porosity);
 
     int setUnitsSolution(int units);
@@ -77,6 +83,9 @@ public:
 
     int surfaceSpeciesConcentrations2Module(double* concentrations);
 
+    int decodeError(int errorCode) const;
+
+    std::string getErrorString() const;
     static autoPtr<phreeqcRMAdapter> New();
 };
 

@@ -5,7 +5,7 @@
 ## Define the total time of the simulation and how often to output concentration fields
 TotalTime=0.1
 WriteTimestep=0.005
-runTimestep=0.0002
+runTimestep=0.0005
 
 #### END OF USER INPUT #######################################################
 

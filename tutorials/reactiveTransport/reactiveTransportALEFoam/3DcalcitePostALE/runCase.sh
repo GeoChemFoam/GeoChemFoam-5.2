@@ -4,7 +4,7 @@
 
 ## Define the total time of the simulation and how often to output fields
 ## Define initial and maximum time-step
-TotalTime=800
+TotalTime=1600
 WriteTimestep=800
 initTimestep=1
 maxTimestep=50

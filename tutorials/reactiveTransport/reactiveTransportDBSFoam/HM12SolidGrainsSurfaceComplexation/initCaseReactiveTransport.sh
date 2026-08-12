@@ -3,25 +3,26 @@
 ###### USERS INPUT ############################################################
 
 #Species in the domain
-species=("Ca+2","Cl-","H+","OH-")
+species=("Ni+2","NiOH+","NiO2H2","Cl-","H+","OH-")
 
 #Diffusion coefficients (m^2/s), one per species
-Diff=(1e-9,1e-9,1e-9,1e-9)
+Diff=(1e-9,1e-9,1e-9,1e-9,1e-9,1e-9)
 
 #Initial concentration
-C0=(9.9705234e-05,0.00019941047,1.0166822e-09,1.0296592e-05)
+C0=(9.838e-06,1.223e-07,9.722e-09,1.994e-05,1.003e-08,1.010e-06)
+#inlet concentration
+C_in=(0,0,0,0,9.974e-08,1.0095e-07)
 
-#inlet concntration
-C_in=(0,0,9.974142e-08,1.0095413e-07,0)
-#C_in=(0,1.9940888e-05,1.0034273e-08,1.0156911e-06,9.970394e-06)
-
-#Surface master species and site density (kmol/m2)
-Surface_masters=("Surf_a")
-master_density=(2.4e-9)
+#Surface master species and site density (kmol/m2)= 2e-3 mol/kg / 1 m^2/g
+Surface_masters=("Surf_sO")
+master_density=(2e-9)
 
 #Surface species and initial concentrations (kmol/m2)
-Surf_species=("Surf_a-","Surf_aCa+","Surf_aH")
-Surf_C0=(8.7802555e-10,8.4844109e-10,6.7353336e-10)
+Surf_species=("Surf_sO-","Surf_sONi+","Surf_sOH","Surf_sONiOH")
+Surf_C0=(4.631e-10,4.715e-10,8.997e-13,1.0644e-09)
+
+# Minimum porosity included in the fixed PHREEQC chemistry mapping
+eps_chemistry_min=1e-3
 
 model='molDiff' ##Deff=Diff
 
@@ -41,13 +42,13 @@ model='molDiff' ##Deff=Diff
 
 
 #define the labels of the phases
-phases=(0,1,2)
+#phases=(0,1,2)
 
 #define the porosity of each phase, note that the porosity of the solid phase CANNOT be 0, default to 0.0001
-micro_por=(0.0001,0.4,1)
+#micro_por=(0.0001,0.4,1)
 
 ##tortuosity factor of micropores
-tau=(2.5,2.5,1)
+#tau=(2.5,2.5,1)
 
 ##micro pore size (m) - Pe = UL/Diff/eps
 #Lpore=(5e-6,5e-6,5e-6)
@@ -74,7 +75,7 @@ IFS=',' read -ra master_density_array <<< "${master_density[0]}"
 IFS=',' read -ra Surf_species_array <<< "${Surf_species[0]}"
 IFS=',' read -ra Surf_C0_array <<< "${Surf_C0[0]}"
 
-python $GCFOAM_DIR/applications/utilities/pyTools/createThermoPhysicalProperties.py $species $Diff $Surf_species $Surface_masters
+python $GCFOAM_DIR/applications/utilities/pyTools/createThermoPhysicalProperties.py $species $Diff $Surf_species $Surface_masters $eps_chemistry_min
 
 NPX="$(tail -n 1 system/NPX)"
 NPY="$(tail -n 1 system/NPY)"

@@ -32,6 +32,7 @@ Description
 #include "primitivePatchInterpolation.H"
 #include "timeSelector.H"
 #include "speciesTable.H"
+#include "upwind.H"
 
 
 using namespace Foam;
@@ -145,6 +146,56 @@ int main(int argc, char *argv[])
 	);
 
 
+        volScalarField eps0
+        (
+            IOobject
+            (
+                "eps",
+                 runTime.timeName(),
+                 mesh,
+                 IOobject::READ_IF_PRESENT,
+                 IOobject::NO_WRITE
+             ),
+             mesh,
+             dimensionedScalar("eps0",dimless,1.0)
+        );
+
+        volScalarField aI
+        (
+            IOobject
+            (
+                "aI",
+                 runTime.timeName(),
+                 mesh,
+                 IOobject::READ_IF_PRESENT,
+                 IOobject::NO_WRITE
+             ),
+             mesh,
+             dimensionedScalar("aI",dimless/dimLength,0.0)
+        );
+
+        dimensionedScalar deltaN = 1e-13/pow(average(mesh.V()), 1.0/3.0);
+
+        volVectorField gradEps = fvc::grad(eps0);
+        surfaceVectorField gradEpsf = fvc::interpolate(gradEps);
+        surfaceVectorField nEpsv = -gradEpsf/(mag(gradEpsf) + deltaN);
+        surfaceScalarField  nEpsf = nEpsv & mesh.Sf();
+
+        surfaceScalarField eps_f = upwind<scalar>(mesh, -nEpsf).interpolate(eps0);
+
+        volScalarField aSurf0
+        (
+            IOobject
+            (
+                "aSurf",
+                 runTime.timeName(),
+                 mesh,
+                 IOobject::READ_IF_PRESENT,
+                 IOobject::NO_WRITE
+             ),
+             aI-fvc::div(eps_f*nEpsf)+eps0*fvc::div(nEpsf)
+        );
+
 
         forAll(solutionSpecies,i)
         {
@@ -158,6 +209,19 @@ int main(int argc, char *argv[])
 	    	runTime.setTime(timeList[timeStep], timeStep);
 
 		Info<< endl<<timeStep<< "    Time = " << runTime.timeName() << endl;
+
+                volScalarField eps
+                (
+                        IOobject
+                        (
+                                "eps",
+                                runTime.timeName(),
+                                mesh,
+                                IOobject::READ_IF_PRESENT,
+                                IOobject::NO_WRITE
+                        ),
+                        eps0
+                );
 
 
               	PtrList<volScalarField> Y(solutionSpecies.size());
@@ -184,7 +248,7 @@ int main(int argc, char *argv[])
 
                 scalarField& vol = clip;
 
-		scalar T = gSum(Yi*vol)/(gSum(vol));
+		scalar T = gSum(eps*Yi*vol)/(gSum(eps*vol)+1e-30);
 
 		if (Pstream::master())
 		{
@@ -194,6 +258,93 @@ int main(int argc, char *argv[])
 	    }
 
 	    csvfile.close();
+        }
+
+        if (thermoPhysicalProperties.found("surfaceSpecies"))
+        {
+	    const dictionary& surfaceSpeciesDict = thermoPhysicalProperties.subDict("surfaceSpecies");
+	    speciesTable surfaceSpecies
+	    (
+		surfaceSpeciesDict.toc()
+	    );
+
+            forAll(surfaceSpecies,i)
+            {
+            string filename = surfaceSpecies[i]+"_Conc.csv";
+	    std::ofstream csvfile(filename.c_str());
+	    csvfile << "time S\n";
+
+        
+	    forAll(timeList, timeStep)
+	    {	
+	    	runTime.setTime(timeList[timeStep], timeStep);
+
+		Info<< endl<<timeStep<< "    Time = " << runTime.timeName() << endl;
+
+                volScalarField aSurf
+                (
+                        IOobject
+                        (
+                                "eps",
+                                runTime.timeName(),
+                                mesh,
+                                IOobject::READ_IF_PRESENT,
+                                IOobject::NO_WRITE
+                        ),
+                        aSurf0
+                );
+
+
+              	PtrList<volScalarField> sY(surfaceSpecies.size());
+
+		sY.set
+		(
+			i,
+			new volScalarField
+			(
+				IOobject
+				(
+					surfaceSpecies[i],
+					mesh.time().timeName(),
+					mesh,
+					IOobject::MUST_READ,
+					IOobject::AUTO_WRITE
+				),
+				mesh
+			)
+		);
+
+
+		volScalarField& Yi = sY[i];
+
+                scalarField& vol = clip;
+
+		scalar sumT = gSum(aSurf*Yi*vol);
+
+                scalar sumA = gSum(aSurf*vol);
+
+                forAll(Yi.boundaryFieldRef(), patchi)
+                {
+                    if (Yi.boundaryFieldRef()[patchi].type()=="reactingWall")
+                    {
+                        const surfaceScalarField& magSf = mesh.magSf();
+                        scalarField& Yfaces   = Yi.boundaryFieldRef()[patchi];
+                        sumT =sumT+gSum(Yfaces*magSf.boundaryField()[patchi]);
+                        sumA =sumA+gSum(magSf.boundaryField()[patchi]);
+                    }
+                }
+
+                scalar sT = sumT/(sumA+1e-30);
+		if (Pstream::master())
+		{
+			
+			csvfile << runTime.timeName() << " " << sT << "\n";
+		}
+	    }
+
+	    csvfile.close();
+        }
+
         }
 
 	return 0;

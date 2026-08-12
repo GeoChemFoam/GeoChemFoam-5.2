@@ -9,6 +9,7 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 mixtureType phreeqcMixture;
+epsChemistryMin 1e-3;
 kineticPhases
 {
 }
@@ -17,7 +18,15 @@ kineticPhaseReactions
 }
 solutionSpecies
 {
-    Ca+2
+    Ni+2
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    NiOH+
+    {
+        D D [ 0 2 -1 0 0 0 0 ] 1e-9;
+    }
+    NiO2H2
     {
         D D [ 0 2 -1 0 0 0 0 ] 1e-9;
     }
@@ -37,14 +46,15 @@ solutionSpecies
 
 surfaceSpecies
 {
-    Surf_a-;
-    Surf_aCa+;
-    Surf_aH;
+    Surf_sO-;
+    Surf_sONi+;
+    Surf_sOH;
+    Surf_sONiOH;
 };
 
 surfaceMasters
 {
-    Surf_a;
+    Surf_sO;
 };
 
 // ************************************************************************* //

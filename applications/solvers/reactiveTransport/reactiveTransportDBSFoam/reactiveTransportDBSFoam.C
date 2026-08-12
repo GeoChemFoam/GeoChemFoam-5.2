@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         #include "readDyMControls.H"
         #include "CourantNo.H"
         #include "deltaEpsMax.H"
-        
+
         #include "setDeltaT.H"
 
         ++runTime;

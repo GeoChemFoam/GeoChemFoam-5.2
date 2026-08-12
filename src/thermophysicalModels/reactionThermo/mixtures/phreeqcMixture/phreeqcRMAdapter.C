@@ -54,6 +54,16 @@ phreeqcRMAdapter::~phreeqcRMAdapter()
         return status;
     }
 
+    int phreeqcRMAdapter::createMapping(int* gridToChemistry)
+    {
+        return RM_CreateMapping(id_, gridToChemistry);
+    }
+
+    int phreeqcRMAdapter::getChemistryCellCount()
+    {
+        return RM_GetChemistryCellCount(id_);
+    }
+
     int phreeqcRMAdapter::setPorosity(double* porosity)
     {
         return RM_SetPorosity(id_, porosity);
@@ -147,6 +157,34 @@ phreeqcRMAdapter::~phreeqcRMAdapter()
     int phreeqcRMAdapter::surfaceSpeciesConcentrations2Module(double* concentrations)
     {
         return RM_SurfaceSpeciesConcentrations2Module(id_, concentrations);
+    }
+
+    int phreeqcRMAdapter::decodeError(int errorCode) const
+    {
+        return RM_DecodeError(id_, errorCode);
+    }
+
+    std::string phreeqcRMAdapter::getErrorString() const
+    {
+        const int len = RM_GetErrorStringLength(id_);
+        if (len <= 0)
+        {
+            return std::string();
+        }
+
+        std::string error
+        (
+            static_cast<std::size_t>(len) + 1u,
+            '\0'
+        );
+
+        if (RM_GetErrorString(id_, &error[0], len + 1) != 0)
+        {
+            return std::string();
+        }
+
+        error.resize(std::strlen(error.c_str()));
+        return error;
     }
 
 autoPtr<phreeqcRMAdapter> phreeqcRMAdapter::New()
